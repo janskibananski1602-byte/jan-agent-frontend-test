@@ -25,28 +25,29 @@
             margin: 0 auto;
         }
         
-        .top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .header {
+            text-align: center;
             margin-bottom: 20px;
         }
         
         .logo {
-            width: 40px;
-            height: 40px;
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 10px;
         }
         
         h1 {
-            font-size: 20px;
-            display: inline;
-            margin-left: 10px;
+            font-size: 28px;
         }
         
         .version {
-            font-size: 11px;
+            font-size: 12px;
             color: gray;
-            margin-left: 10px;
+        }
+        
+        .theme-btn {
+            text-align: center;
+            margin-bottom: 15px;
         }
         
         button.theme {
@@ -166,14 +167,15 @@
     </style>
 </head>
 <body class="light">
-    <div class="top">
-        <div>
-            <svg class="logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <text x="50" y="75" font-size="70" font-weight="bold" text-anchor="middle" fill="#555" font-family="Arial">J</text>
-            </svg>
-            <h1>Jan Agent</h1>
-            <span class="version">v0.2.0-alpha</span>
-        </div>
+    <div class="header">
+        <svg class="logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <text x="50" y="75" font-size="70" font-weight="bold" text-anchor="middle" fill="#555" font-family="Arial">J</text>
+        </svg>
+        <h1>Jan Agent</h1>
+        <div class="version">v0.2.0-alpha</div>
+    </div>
+
+    <div class="theme-btn">
         <button class="theme" onclick="toggleTheme()">Switch Theme</button>
     </div>
 
