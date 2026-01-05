@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jan Agent Alpha</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --bg: #ffffff;
+            --surface: #f8f9fa;
+            --border: #e0e0e0;
+            --text: #1a1a1a;
+            --text-secondary: #666666;
+            --user-msg: #e3f2fd;
+            --ai-msg: #f5f5f5;
+            --button: #2196f3;
+            --button-hover: #1976d2;
+            --code-bg: #f0f0f0;
+        }
+        
+        [data-theme="dark"] {
+            --bg: #0a0a0a;
+            --surface: #1a1a1a;
+            --border: #333333;
+            --text: #e0e0e0;
+            --text-secondary: #999999;
+            --user-msg: #1e3a5f;
+            --ai-msg: #2a2a2a;
+            --button: #2196f3;
+            --button-hover: #1976d2;
+            --code-bg: #151515;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            transition: background 0.3s, color 0.3s;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .title-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo {
+            width: 50px;
+            height: 50px;
+        }
+        
+        .title-text h1 {
+            font-size: 22px;
+            font-weight: 600;
+        }
+        
+        .version {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+        
+        .theme-toggle {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .theme-toggle:hover {
+            background: var(--border);
+        }
+        
+        .chat-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            height: 500px;
+            overflow-y: auto;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        
+        .msg {
+            margin-bottom: 16px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            line-height: 1.5;
+        }
+        
+        .user {
+            background: var(--user-msg);
+            margin-left: 20%;
+        }
+        
+        .ai {
+            background: var(--ai-msg);
+            margin-right: 20%;
+        }
+        
+        .ai h1, .ai h2, .ai h3 {
+            margin: 12px 0 6px 0;
+            font-size: 1.1em;
+        }
+        
+        .ai code {
+            background: var(--code-bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        
+        .ai pre {
+            background: var(--code-bg);
+            padding: 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 8px 0;
+        }
+        
+        .ai pre code {
+            background: none;
+            padding: 0;
+        }
+        
+        .ai ul, .ai ol {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+        
+        .input-area {
+            display: flex;
+            gap: 12px;
+        }
+        
+        input {
+            flex: 1;
+            padding: 14px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--surface);
+            color: var(--text);
+            font-size: 15px;
+            transition: border 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: var(--button);
+        }
+        
+        button {
+            padding: 14px 28px;
+            background: var(--button);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: var(--button-hover);
+        }
+        
+        button:disabled {
+            background: var(--border);
+            cursor: not-allowed;
+        }
+        
+        .footer {
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="title-section">
+                <svg class="logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="jGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#d0d0d0;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#3a3a3a;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <text x="50" y="75" font-size="70" font-weight="bold" text-anchor="middle" fill="url(#jGrad)" font-family="Arial, sans-serif">J</text>
+                </svg>
+                <div class="title-text">
+                    <h1>Jan Agent</h1>
+                    <div class="version">v0.2.0-alpha</div>
+                </div>
+            </div>
+            <button class="theme-toggle" onclick="toggleTheme()">🌓 Theme</button>
+        </div>
+
+        <div class="chat-box" id="chatBox"></div>
+
+        <div class="input-area">
+            <input type="text" id="msgInput" placeholder="Type your message..." />
+            <button id="sendBtn" onclick="send()">Send</button>
+        </div>
+
+        <div class="footer">© Jan 2025. All Rights Reserved.</div>
+    </div>
+
+    <script>
+        const API = 'https://jan-agent-backend.onrender.com/chat';
+        const chatBox = document.getElementById('chatBox');
+        const msgInput = document.getElementById('msgInput');
+        const sendBtn = document.getElementById('sendBtn');
+        let history = [];
+
+        // Load theme preference
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const newTheme = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        msgInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') send();
+        });
+
+        async function send() {
+            const msg = msgInput.value.trim();
+            if (!msg) return;
+
+            addMsg(msg, 'user');
+            history.push({ role: 'user', content: msg });
+            msgInput.value = '';
+            sendBtn.disabled = true;
+
+            try {
+                const res = await fetch(API, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ messages: history })
+                });
+
+                const data = await res.json();
+                
+                if (!res.ok) {
+                    if (res.status === 429) {
+                        addMsg('⚠️ Too many requests. Please wait a moment and try again.', 'ai');
+                    } else if (res.status >= 500) {
+                        addMsg('⚠️ Server error. Please try again later.', 'ai');
+                    } else {
+                        addMsg(`⚠️ Error: ${data.error || 'Something went wrong'}`, 'ai');
+                    }
+                    return;
+                }
+                
+                const reply = data.response || data.error;
+                addMsg(reply, 'ai', true);
+                history.push({ role: 'assistant', content: reply });
+            } catch (err) {
+                addMsg(`⚠️ Network error: ${err.message}`, 'ai');
+            } finally {
+                sendBtn.disabled = false;
+            }
+        }
+
+        function addMsg(text, type, isMd = false) {
+            const div = document.createElement('div');
+            div.className = `msg ${type}`;
+            
+            if (isMd && type === 'ai') {
+                div.innerHTML = marked.parse(text);
+            } else {
+                div.textContent = text;
+            }
+            
+            chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    </script>
+</body>
+</html>
