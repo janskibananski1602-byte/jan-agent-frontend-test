@@ -18,6 +18,21 @@
             color: #fff;
         }
         
+        body.blue {
+            background: #1a2332;
+            color: #e0e6ed;
+        }
+        
+        body.green {
+            background: #0d1f12;
+            color: #c9e4ca;
+        }
+        
+        body.purple {
+            background: #1a0d2e;
+            color: #e6d5f5;
+        }
+        
         body {
             font-family: Arial, sans-serif;
             padding: 20px;
@@ -48,6 +63,9 @@
         .theme-btn {
             text-align: center;
             margin-bottom: 15px;
+            display: flex;
+            gap: 5px;
+            justify-content: center;
         }
         
         button.theme {
@@ -56,6 +74,7 @@
             padding: 5px 10px;
             cursor: pointer;
             border-radius: 3px;
+            font-size: 12px;
         }
         
         body.light button.theme {
@@ -64,6 +83,18 @@
         
         body.dark button.theme {
             color: #fff;
+        }
+        
+        body.blue button.theme {
+            color: #e0e6ed;
+        }
+        
+        body.green button.theme {
+            color: #c9e4ca;
+        }
+        
+        body.purple button.theme {
+            color: #e6d5f5;
         }
         
         .chat {
@@ -82,9 +113,23 @@
             background: #111;
         }
         
+        body.blue .chat {
+            background: #0f1621;
+        }
+        
+        body.green .chat {
+            background: #050a07;
+        }
+        
+        body.purple .chat {
+            background: #0d0619;
+        }
+        
         .msg {
             margin-bottom: 10px;
             padding: 8px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
         
         body.light .user {
@@ -97,12 +142,39 @@
             text-align: right;
         }
         
+        body.blue .user {
+            background: #2a3f5f;
+            text-align: right;
+        }
+        
+        body.green .user {
+            background: #1a3d20;
+            text-align: right;
+        }
+        
+        body.purple .user {
+            background: #2d1a4d;
+            text-align: right;
+        }
+        
         body.light .ai {
             background: #f5f5f5;
         }
         
         body.dark .ai {
             background: #1a1a1a;
+        }
+        
+        body.blue .ai {
+            background: #1e2d3d;
+        }
+        
+        body.green .ai {
+            background: #0f2415;
+        }
+        
+        body.purple .ai {
+            background: #160d25;
         }
         
         .ai code {
@@ -112,6 +184,18 @@
         
         body.dark .ai code {
             background: #333;
+        }
+        
+        body.blue .ai code {
+            background: #2a3f5f;
+        }
+        
+        body.green .ai code {
+            background: #1a3d20;
+        }
+        
+        body.purple .ai code {
+            background: #2d1a4d;
         }
         
         .ai pre {
@@ -124,26 +208,56 @@
             background: #333;
         }
         
+        body.blue .ai pre {
+            background: #2a3f5f;
+        }
+        
+        body.green .ai pre {
+            background: #1a3d20;
+        }
+        
+        body.purple .ai pre {
+            background: #2d1a4d;
+        }
+        
         .bottom {
             display: flex;
             gap: 10px;
         }
         
-        input {
+        textarea {
             flex: 1;
             padding: 10px;
             border: 1px solid gray;
             font-size: 14px;
+            font-family: Arial, sans-serif;
+            resize: vertical;
+            min-height: 40px;
         }
         
-        body.light input {
+        body.light textarea {
             background: #fff;
             color: #000;
         }
         
-        body.dark input {
+        body.dark textarea {
             background: #111;
             color: #fff;
+        }
+        
+        body.blue textarea {
+            background: #0f1621;
+            color: #e0e6ed;
+        }
+        
+        body.green textarea {
+            background: #050a07;
+            color: #c9e4ca;
+        }
+        
+        body.purple textarea {
+            background: #0d0619;
+            color: #e6d5f5;
         }
         
         button.send {
@@ -176,13 +290,17 @@
     </div>
 
     <div class="theme-btn">
-        <button class="theme" onclick="toggleTheme()">Switch Theme</button>
+        <button class="theme" onclick="setTheme('light')">Light</button>
+        <button class="theme" onclick="setTheme('dark')">Dark</button>
+        <button class="theme" onclick="setTheme('blue')">Blue</button>
+        <button class="theme" onclick="setTheme('green')">Green</button>
+        <button class="theme" onclick="setTheme('purple')">Purple</button>
     </div>
 
     <div class="chat" id="chat"></div>
 
     <div class="bottom">
-        <input type="text" id="input" placeholder="Type message..." />
+        <textarea id="input" placeholder="Type message..."></textarea>
         <button class="send" id="btn" onclick="send()">Send</button>
     </div>
 
@@ -198,16 +316,10 @@
         const theme = localStorage.getItem('theme') || 'light';
         document.body.className = theme;
 
-        function toggleTheme() {
-            const current = document.body.className;
-            const newTheme = current === 'dark' ? 'light' : 'dark';
-            document.body.className = newTheme;
-            localStorage.setItem('theme', newTheme);
+        function setTheme(themeName) {
+            document.body.className = themeName;
+            localStorage.setItem('theme', themeName);
         }
-
-        input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') send();
-        });
 
         async function send() {
             const msg = input.value.trim();
