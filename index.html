@@ -6,17 +6,18 @@
     <title>Jan Agent</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
+        :root {
+            --transition-speed: 0.4s;
+        }
+
+        /* Global Transition for ALL elements and properties */
         *, *::before, *::after { 
             margin: 0; 
             padding: 0; 
             box-sizing: border-box; 
-            transition: background-color var(--transition-speed), color var(--transition-speed), border-color var(--transition-speed), box-shadow var(--transition-speed), opacity var(--transition-speed);
+            transition: all var(--transition-speed) ease-in-out !important;
         }
         
-        :root {
-            --transition-speed: 0.3s;
-        }
-
         body.light { background: #fff; color: #000; }
         body.dark { background: #000; color: #fff; }
         body.blue { background: #1a2332; color: #e0e6ed; }
@@ -31,7 +32,6 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
-            transition: background-color var(--transition-speed), color var(--transition-speed);
         }
         
         header {
@@ -48,30 +48,40 @@
         h1 { font-size: 24px; }
         .version { font-size: 12px; color: gray; }
         
-        .theme-btn {
+        .controls {
             text-align: center;
             margin-bottom: 15px;
             display: flex;
-            gap: 5px;
+            gap: 10px;
             justify-content: center;
-            flex-wrap: wrap;
+            align-items: center;
         }
-        
-        button.theme {
-            background: none;
-            border: 1px solid gray;
+
+        select.theme-dropdown {
             padding: 5px 10px;
+            border-radius: 5px;
+            border: 1px solid gray;
+            background: transparent;
+            color: inherit;
             cursor: pointer;
-            border-radius: 3px;
-            font-size: 12px;
-            transition: all var(--transition-speed);
+            font-size: 14px;
+            outline: none;
         }
         
-        body.light button.theme { color: #000; }
-        body.dark button.theme { color: #fff; }
-        body.blue button.theme { color: #e0e6ed; }
-        body.green button.theme { color: #c9e4ca; }
-        body.purple button.theme { color: #e6d5f5; }
+        .clear-btn {
+            background: transparent;
+            border: 1px solid #ff4444;
+            color: #ff4444;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .clear-btn:hover {
+            background: #ff4444;
+            color: white;
+        }
         
         main {
             flex: 1;
@@ -88,7 +98,6 @@
             padding: 15px;
             margin-bottom: 10px;
             border-radius: 8px;
-            transition: background-color var(--transition-speed);
         }
         
         body.light .chat { background: #fafafa; }
@@ -168,7 +177,10 @@
             min-height: 45px;
             max-height: 150px;
             border-radius: 20px;
-            transition: background-color var(--transition-speed), color var(--transition-speed);
+            background: transparent;
+            color: inherit;
+            outline: none !important; /* Remove black line/outline */
+            box-shadow: none !important;
         }
         
         button.send {
@@ -179,7 +191,6 @@
             cursor: pointer;
             border-radius: 20px;
             font-weight: bold;
-            transition: opacity 0.2s;
         }
         
         button.send:disabled {
@@ -211,13 +222,15 @@
         <div class="version">v0.4.0-alpha</div>
     </header>
 
-    <div class="theme-btn" role="group" aria-label="Theme selection">
-        <button class="theme" onclick="setTheme('light')">Light</button>
-        <button class="theme" onclick="setTheme('dark')">Dark</button>
-        <button class="theme" onclick="setTheme('blue')">Blue</button>
-        <button class="theme" onclick="setTheme('green')">Green</button>
-        <button class="theme" onclick="setTheme('purple')">Purple</button>
-        <button class="theme" onclick="clearChat()" style="border-color: #ff4444; color: #ff4444;">Clear Chat</button>
+    <div class="controls">
+        <select class="theme-dropdown" id="themeSelect" onchange="setTheme(this.value)" aria-label="Select theme">
+            <option value="light">Light Theme</option>
+            <option value="dark">Dark Theme</option>
+            <option value="blue">Blue Theme</option>
+            <option value="green">Green Theme</option>
+            <option value="purple">Purple Theme</option>
+        </select>
+        <button class="clear-btn" onclick="clearChat()">Clear Chat</button>
     </div>
 
     <main>
@@ -241,12 +254,14 @@
         const input = document.getElementById('input');
         const btn = document.getElementById('btn');
         const typingIndicator = document.getElementById('typing');
+        const themeSelect = document.getElementById('themeSelect');
         
         let chatHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
 
         // Initialize theme
-        const theme = localStorage.getItem('theme') || 'light';
-        document.body.className = theme;
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.body.className = savedTheme;
+        themeSelect.value = savedTheme;
 
         // Restore chat history
         window.onload = () => {
@@ -277,14 +292,10 @@
         input.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 if (!isTouchDevice()) {
-                    // Desktop: Enter to send
                     if (!e.shiftKey) {
                         e.preventDefault();
                         send();
                     }
-                } else {
-                    // Mobile: Enter is just a new line (default behavior)
-                    // No preventDefault here
                 }
             }
         });
@@ -299,7 +310,6 @@
             const msg = input.value.trim();
             if (!msg || btn.disabled) return;
 
-            // Basic rate limiting check (frontend)
             const lastMsgTime = parseInt(localStorage.getItem('lastMsgTime') || '0');
             const now = Date.now();
             if (now - lastMsgTime < 1000) {
@@ -353,7 +363,6 @@
             const div = document.createElement('div');
             div.className = 'msg ' + type;
             
-            // Apply Markdown to both AI and User messages in v0.4.0
             if (isMd) {
                 div.innerHTML = marked.parse(text);
             } else {
@@ -365,7 +374,6 @@
         }
 
         function saveHistory() {
-            // Keep only last 50 messages to prevent localStorage bloat
             if (chatHistory.length > 50) {
                 chatHistory = chatHistory.slice(-50);
             }
