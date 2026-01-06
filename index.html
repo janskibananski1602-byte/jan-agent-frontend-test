@@ -38,9 +38,12 @@
             padding: 20px;
             max-width: 700px;
             margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
         
-        .header {
+        header {
             text-align: center;
             margin-bottom: 20px;
         }
@@ -97,6 +100,12 @@
             color: #e6d5f5;
         }
         
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
         .chat {
             border: 1px solid gray;
             height: 400px;
@@ -272,24 +281,25 @@
             background: #666;
         }
         
-        .footer {
+        footer {
             text-align: center;
             font-size: 10px;
             color: gray;
             margin-top: 10px;
+            padding: 10px 0;
         }
     </style>
 </head>
 <body class="light">
-    <div class="header">
-        <svg class="logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <header>
+        <svg class="logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <text x="50" y="75" font-size="70" font-weight="bold" text-anchor="middle" fill="#555" font-family="Arial">J</text>
         </svg>
         <h1>Jan Agent</h1>
         <div class="version">v0.3.0-alpha</div>
-    </div>
+    </header>
 
-    <div class="theme-btn">
+    <div class="theme-btn" role="group" aria-label="Theme selection">
         <button class="theme" onclick="setTheme('light')">Light</button>
         <button class="theme" onclick="setTheme('dark')">Dark</button>
         <button class="theme" onclick="setTheme('blue')">Blue</button>
@@ -297,21 +307,29 @@
         <button class="theme" onclick="setTheme('purple')">Purple</button>
     </div>
 
-    <div class="chat" id="chat"></div>
+    <main>
+        <div class="chat" id="chat" role="log" aria-live="polite" aria-label="Chat history"></div>
 
-    <div class="bottom">
-        <textarea id="input" placeholder="Type message..."></textarea>
-        <button class="send" id="btn" onclick="send()">Send</button>
-    </div>
+        <div class="bottom">
+            <textarea id="input" placeholder="Type message... (Enter to send, Shift+Enter for new line)" aria-label="Message input"></textarea>
+            <button class="send" id="btn" onclick="send()" aria-label="Send message">Send</button>
+        </div>
+    </main>
 
-    <div class="footer">© Jan 2026. All rights reserved.</div>
+    <footer>© Jan 2026. All rights reserved.</footer>
 
     <script>
-        const API = 'https://jan-agent-backend-test.onrender.com/chat';
+        // Move API endpoint to a configurable variable
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+            ? 'http://localhost:5000/chat' 
+            : 'https://jan-agent-backend-test.onrender.com/chat';
+
         const chat = document.getElementById('chat');
         const input = document.getElementById('input');
         const btn = document.getElementById('btn');
-        let history = [];
+        
+        // Rename history to chatHistory
+        let chatHistory = [];
 
         const theme = localStorage.getItem('theme') || 'light';
         document.body.className = theme;
@@ -321,20 +339,28 @@
             localStorage.setItem('theme', themeName);
         }
 
+        // Add Enter key submission (Enter = send, Shift+Enter = new line)
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                send();
+            }
+        });
+
         async function send() {
             const msg = input.value.trim();
-            if (!msg) return;
+            if (!msg || btn.disabled) return;
 
             addMsg(msg, 'user');
-            history.push({ role: 'user', content: msg });
+            chatHistory.push({ role: 'user', content: msg });
             input.value = '';
             btn.disabled = true;
 
             try {
-                const res = await fetch(API, {
+                const res = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ messages: history })
+                    body: JSON.stringify({ messages: chatHistory })
                 });
 
                 const data = await res.json();
@@ -352,11 +378,12 @@
                 
                 const reply = data.response || data.error;
                 addMsg(reply, 'ai', true);
-                history.push({ role: 'assistant', content: reply });
+                chatHistory.push({ role: 'assistant', content: reply });
             } catch (err) {
                 addMsg('Network error: ' + err.message, 'ai');
             } finally {
                 btn.disabled = false;
+                input.focus();
             }
         }
 
