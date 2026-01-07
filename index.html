@@ -2,287 +2,388 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self' https://jan-agent-backend-test.onrender.com http://localhost:5000; img-src 'self' data:; font-src 'self';">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jan Agent</title>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" integrity="sha384-948ahk4ZmxYVYOc+rxN1H2gM1EJ2Duhp7uHtZ4WSLkV4Vtx5MUqnV+l7u9B+jFv+" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         :root {
             --transition-speed: 0.4s;
             --bg-color: #ffffff;
             --text-color: #000000;
-            --accent-color: #007bff;
             --chat-bg: #fafafa;
-            --msg-user-bg: rgba(0, 123, 255, 0.1);
-            --msg-ai-bg: rgba(128, 128, 128, 0.1);
-            --border-color: #cccccc;
+            --user-msg-bg: #007bff;
+            --user-msg-text: #ffffff;
+            --ai-msg-bg: #e9e9eb;
+            --ai-msg-text: #000000;
         }
 
-        * { 
-            margin: 0; padding: 0; box-sizing: border-box; 
-            transition: background-color var(--transition-speed) ease, 
-                        color var(--transition-speed) ease, 
-                        border-color var(--transition-speed) ease, 
-                        filter 0.3s ease !important;
+        /* Global Transition for ALL elements and properties */
+        *, *::before, *::after { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            transition: background-color var(--transition-speed) ease-in-out, color var(--transition-speed) ease-in-out !important;
         }
 
-        body.blurred { filter: blur(20px) grayscale(100%); pointer-events: none; }
-
-        body.light { --bg-color: #ffffff; --text-color: #000000; --chat-bg: #f9f9f9; }
-        body.gray { --bg-color: #808080; --text-color: #ffffff; --chat-bg: #707070; }
-        body.black { --bg-color: #1a1a1a; --text-color: #ffffff; --chat-bg: #111111; }
-        body.obsidian { --bg-color: #050505; --text-color: #e0e0e0; --chat-bg: #0a0a0a; }
-        body.deep-blue { --bg-color: #000033; --text-color: #e0e0ff; --chat-bg: #000022; }
-        body.blue { --bg-color: #0000ff; --text-color: #ffffff; --chat-bg: #0000cc; }
-        body.light-blue { --bg-color: #add8e6; --text-color: #000000; --chat-bg: #bde8f6; }
-        body.deep-green { --bg-color: #003300; --text-color: #e0ffe0; --chat-bg: #002200; }
-        body.green { --bg-color: #008000; --text-color: #ffffff; --chat-bg: #007000; }
-        body.light-green { --bg-color: #90ee90; --text-color: #000000; --chat-bg: #a0ffa0; }
-        body.dark-red { --bg-color: #8b0000; --text-color: #ffffff; --chat-bg: #7b0000; }
-        body.red { --bg-color: #ff0000; --text-color: #ffffff; --chat-bg: #ee0000; }
-        body.light-red { --bg-color: #ffcccb; --text-color: #000000; --chat-bg: #ffdcdc; }
-        body.deep-pink { --bg-color: #ff1493; --text-color: #ffffff; --chat-bg: #ee0483; }
-        body.pink { --bg-color: #ffc0cb; --text-color: #000000; --chat-bg: #ffd0db; }
-        body.light-pink { --bg-color: #fff0f5; --text-color: #000000; --chat-bg: #ffffff; }
-        body.deep-purple { --bg-color: #301934; --text-color: #e0d0e0; --chat-bg: #200924; }
-        body.purple { --bg-color: #800080; --text-color: #ffffff; --chat-bg: #700070; }
-        body.light-purple { --bg-color: #e6e6fa; --text-color: #000000; --chat-bg: #f6f6ff; }
-
-        @keyframes rainbow-bg {
-            0% { background: #ff0000; } 14% { background: #ff7f00; } 28% { background: #ffff00; }
-            42% { background: #00ff00; } 56% { background: #0000ff; } 70% { background: #4b0082; }
-            84% { background: #8b00ff; } 100% { background: #ff0000; }
+        /* Custom Scrollbar for everything */
+        *::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
         }
-        body.rainbow { animation: rainbow-bg 3s linear infinite !important; color: white !important; }
-        body.rainbow * { background: transparent !important; color: white !important; border-color: white !important; }
+        *::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+        }
+        *::-webkit-scrollbar-thumb {
+            background: rgba(136, 136, 136, 0.5);
+            border-radius: 10px;
+            border: 2px solid transparent;
+            background-clip: content-box;
+        }
+        *::-webkit-scrollbar-thumb:hover {
+            background: rgba(85, 85, 85, 0.8);
+            border: 2px solid transparent;
+            background-clip: content-box;
+        }
+        /* For Firefox */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(136, 136, 136, 0.5) rgba(0, 0, 0, 0.05);
+        }
 
         body {
             background-color: var(--bg-color);
             color: var(--text-color);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             padding: 10px;
-            max-width: 100%;
-            width: 100%;
+            max-width: 800px;
             margin: 0 auto;
             display: flex;
             flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
+            min-height: 100vh;
         }
-        
-        header { text-align: center; padding: 10px 0; flex-shrink: 0; }
-        .logo { width: 50px; height: 50px; margin: 0 auto 5px; }
-        h1 { font-size: 20px; }
-        .version { font-size: 10px; color: gray; }
-        
+
+        header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 5px;
+        }
+
+        h1 { font-size: 24px; }
+        .version { font-size: 12px; color: gray; }
+
         .controls {
-            display: flex; gap: 8px; justify-content: center; align-items: center;
-            padding: 10px 0; flex-wrap: wrap; flex-shrink: 0;
+            text-align: center;
+            margin-bottom: 15px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
         }
 
-        select, button.btn-action {
-            padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color);
-            background: transparent; color: inherit; cursor: pointer; font-size: 13px; outline: none;
+        .color-control {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
         }
 
-        .offline-banner {
-            background: #ff4444; color: white; text-align: center; padding: 4px;
-            font-size: 11px; display: none; border-radius: 4px; margin-bottom: 5px;
+        input[type="color"] {
+            border: none;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            background: transparent;
         }
-        
-        main { flex: 1; display: flex; flex-direction: column; width: 100%; max-width: 800px; margin: 0 auto; overflow: hidden; }
+
+        .clear-btn {
+            background: transparent;
+            border: 1px solid #ff4444;
+            color: #ff4444;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .clear-btn:hover {
+            background: #ff4444;
+            color: white;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
 
         .chat {
-            border: 1px solid var(--border-color);
-            flex: 1; overflow-y: auto;
-            padding: 15px; margin-bottom: 10px; border-radius: 12px;
+            border: 1px solid gray;
+            height: 50vh;
+            min-height: 300px;
+            overflow-y: auto;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
             background-color: var(--chat-bg);
-            -webkit-overflow-scrolling: touch;
         }
-        
-        .msg-container { display: flex; flex-direction: column; margin-bottom: 12px; width: 100%; }
+
         .msg {
-            padding: 10px 14px; border-radius: 18px; max-width: 85%;
-            line-height: 1.4; position: relative; border: 1px solid rgba(128,128,128,0.15);
-            font-size: 15px;
-        }
-        
-        .user { align-self: flex-end; border-bottom-right-radius: 4px; background-color: var(--msg-user-bg); }
-        .ai { align-self: flex-start; border-bottom-left-radius: 4px; background-color: var(--msg-ai-bg); }
-
-        .timestamp { font-size: 9px; color: gray; margin-top: 3px; align-self: flex-end; }
-        .ai + .timestamp { align-self: flex-start; }
-
-        .code-container { position: relative; margin: 8px 0; width: 100%; }
-        .copy-btn {
-            position: absolute; top: 4px; right: 4px;
-            background: rgba(128, 128, 128, 0.6); color: white;
-            border: none; padding: 2px 6px; border-radius: 4px;
-            font-size: 9px; cursor: pointer; opacity: 0.8;
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            border-radius: 12px;
+            max-width: 85%;
+            line-height: 1.5;
         }
 
-        pre { background: rgba(0,0,0,0.05); padding: 10px; overflow-x: auto; border-radius: 8px; font-size: 13px; }
-        code { font-family: 'Courier New', Courier, monospace; }
-        
-        .typing { font-style: italic; font-size: 11px; margin-bottom: 8px; display: none; padding-left: 5px; }
+        .user {
+            align-self: flex-end;
+            margin-left: auto;
+            border-bottom-right-radius: 2px;
+            background-color: var(--user-msg-bg);
+            color: var(--user-msg-text);
+        }
 
-        .bottom { display: flex; gap: 8px; padding: 10px 0; flex-shrink: 0; align-items: flex-end; }
+        .ai {
+            align-self: flex-start;
+            margin-right: auto;
+            border-bottom-left-radius: 2px;
+            background-color: var(--ai-msg-bg);
+            color: var(--ai-msg-text);
+        }
+
+        .ai code, .user code {
+            background: rgba(0,0,0,0.1);
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+
+        .ai pre, .user pre {
+            background: rgba(0,0,0,0.1);
+            padding: 10px;
+            overflow-x: auto;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        .typing {
+            font-style: italic;
+            font-size: 12px;
+            margin-bottom: 10px;
+            display: none;
+        }
+
+        .bottom {
+            display: flex;
+            gap: 10px;
+            padding-bottom: 10px;
+            align-items: flex-end;
+        }
+
         textarea {
-            flex: 1; padding: 12px 16px; border: 1px solid var(--border-color);
-            font-size: 16px; font-family: inherit; resize: none;
-            min-height: 44px; max-height: 120px; border-radius: 22px;
-            background: transparent; color: inherit; outline: none !important;
+            flex: 1;
+            padding: 12px;
+            border: 1px solid gray;
+            font-size: 16px;
+            font-family: inherit;
+            resize: none;
+            min-height: 45px;
+            max-height: 150px;
+            border-radius: 20px;
+            background: transparent;
+            color: inherit;
+            outline: none !important;
             box-shadow: none !important;
         }
-        
+
         button.send {
-            width: 44px; height: 44px; background: var(--accent-color); color: #fff;
-            border: none; cursor: pointer; border-radius: 50%; font-weight: bold;
-            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            width: 45px;
+            height: 45px;
+            background: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            padding: 0;
         }
-        button.send:disabled { opacity: 0.5; }
-        
-        footer { text-align: center; font-size: 10px; color: gray; padding: 5px 0; flex-shrink: 0; }
+
+        button.send svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        button.send:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 10px;
+            color: gray;
+            margin-top: auto;
+            padding: 10px 0;
+        }
 
         @media (max-width: 600px) {
             body { padding: 5px; }
-            .msg { max-width: 90%; font-size: 14px; }
-            h1 { font-size: 18px; }
-            .controls select, .controls button { font-size: 12px; padding: 5px 8px; }
+            .chat { height: 60vh; }
+            h1 { font-size: 20px; }
         }
     </style>
 </head>
-<body class="light">
-    <div id="offlineBanner" class="offline-banner">You are currently offline.</div>
-
+<body>
     <header>
-        <svg class="logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-            <text x="50" y="75" font-size="70" font-weight="bold" text-anchor="middle" fill="#555">J</text>
+        <svg class="logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <text x="50" y="75" font-size="70" font-weight="bold" text-anchor="middle" fill="#555" font-family="Arial">J</text>
         </svg>
         <h1>Jan Agent</h1>
         <div class="version">v0.5.0-beta</div>
     </header>
 
     <div class="controls">
-        <select id="themeSelect" onchange="setTheme(this.value)">
-            <option value="light">Light</option><option value="gray">Gray</option>
-            <option value="black">Black</option><option value="obsidian">Obsidian</option>
-            <option value="deep-blue">Deep Blue</option><option value="blue">Blue</option>
-            <option value="light-blue">Light Blue</option><option value="deep-green">Deep Green</option>
-            <option value="green">Green</option><option value="light-green">Light Green</option>
-            <option value="dark-red">Dark Red</option><option value="red">Red</option>
-            <option value="light-red">Light Red</option><option value="deep-pink">Deep Pink</option>
-            <option value="pink">Pink</option><option value="light-pink">Light Pink</option>
-            <option value="deep-purple">Deep Purple</option><option value="purple">Purple</option>
-            <option value="light-purple">Light Purple</option>
-        </select>
-        <button class="btn-action" onclick="exportChat()">Export</button>
-        <button class="btn-action" onclick="clearChat()" style="color: #ff4444; border-color: #ff4444;">Clear</button>
+        <div class="color-control">
+            <label for="bgColor">BG:</label>
+            <input type="color" id="bgColor" value="#ffffff" onchange="updateColors()">
+        </div>
+        <div class="color-control">
+            <label for="textColor">Text:</label>
+            <input type="color" id="textColor" value="#000000" onchange="updateColors()">
+        </div>
+        <button class="clear-btn" onclick="clearChat()">Remove it</button>
     </div>
 
     <main>
-        <div class="chat" id="chat"></div>
+        <div class="chat" id="chat" role="log" aria-live="polite" aria-label="Chat history"></div>
         <div id="typing" class="typing">Jan Agent is thinking...</div>
+
         <div class="bottom">
-            <textarea id="input" placeholder="Type message..." rows="1"></textarea>
-            <button class="send" id="btn" onclick="send()">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            <textarea id="input" placeholder="Type message..." aria-label="Message input" rows="1"></textarea>
+            <button class="send" id="btn" onclick="send()" aria-label="Send message">
+                <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
             </button>
         </div>
     </main>
 
-    <footer>© Jan 2026. Alt+S: Theme | Alt+C: Clear | Alt+E: Export</footer>
+    <footer>© Jan 2026. All rights reserved.</footer>
 
     <script>
-        const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-            ? 'http://localhost:5000/chat' : 'https://jan-agent-backend-test.onrender.com/chat';
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+            ? 'http://localhost:5000/chat' 
+            : 'https://jan-agent-backend-test.onrender.com/chat';
 
         const chat = document.getElementById('chat');
         const input = document.getElementById('input');
         const btn = document.getElementById('btn');
         const typingIndicator = document.getElementById('typing');
-        const themeSelect = document.getElementById('themeSelect');
-        const offlineBanner = document.getElementById('offlineBanner');
-        
+        const bgColorInput = document.getElementById('bgColor');
+        const textColorInput = document.getElementById('textColor');
+
         let chatHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
-        let themeChangeCount = 0;
-        let themeTimer = null;
-        let isRainbow = false;
 
-        window.onblur = () => document.body.classList.add('blurred');
-        window.onfocus = () => document.body.classList.remove('blurred');
-        window.ononline = () => offlineBanner.style.display = 'none';
-        window.onoffline = () => offlineBanner.style.display = 'block';
-        if (!navigator.onLine) offlineBanner.style.display = 'block';
+        // Initialize colors
+        const savedBgColor = localStorage.getItem('bgColor') || '#ffffff';
+        const savedTextColor = localStorage.getItem('textColor') || '#000000';
+        bgColorInput.value = savedBgColor;
+        textColorInput.value = savedTextColor;
+        updateColors(false);
 
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        document.body.className = savedTheme;
-        themeSelect.value = savedTheme;
-        chatHistory.forEach(msg => addMsg(msg.content, msg.role, true, msg.timestamp));
-        input.focus();
+        // Restore chat history
+        window.onload = () => {
+            chatHistory.forEach(msg => addMsg(msg.content, msg.role, true));
+            input.focus();
+        };
 
-        function setTheme(themeName) {
-            if (isRainbow) return;
-            document.body.className = themeName;
-            localStorage.setItem('theme', themeName);
-            themeChangeCount++;
-            if (!themeTimer) themeTimer = setTimeout(() => { themeChangeCount = 0; themeTimer = null; }, 60000);
-            if (themeChangeCount >= 21) { isRainbow = true; document.body.className = 'rainbow'; }
+        function updateColors(save = true) {
+            const bg = bgColorInput.value;
+            const text = textColorInput.value;
+            
+            document.documentElement.style.setProperty('--bg-color', bg);
+            document.documentElement.style.setProperty('--text-color', text);
+            
+            // Adjust chat background and message colors based on brightness
+            const isDark = isColorDark(bg);
+            document.documentElement.style.setProperty('--chat-bg', isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)');
+            document.documentElement.style.setProperty('--ai-msg-bg', isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)');
+            document.documentElement.style.setProperty('--ai-msg-text', text);
+            
+            if (save) {
+                localStorage.setItem('bgColor', bg);
+                localStorage.setItem('textColor', text);
+            }
+        }
+
+        function isColorDark(color) {
+            const hex = color.replace('#', '');
+            const r = parseInt(hex.substr(0, 2), 16);
+            const g = parseInt(hex.substr(2, 2), 16);
+            const b = parseInt(hex.substr(4, 2), 16);
+            const brightness = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+            return brightness < 128;
         }
 
         function clearChat() {
-            if (confirm('Clear all messages?')) {
+            if (confirm('Remove all messages?')) {
                 chatHistory = [];
                 localStorage.removeItem('chatHistory');
                 chat.innerHTML = '';
             }
         }
 
-        function exportChat() {
-            if (chatHistory.length === 0) return;
-            const text = chatHistory.map(m => `[${m.timestamp || 'N/A'}] ${m.role.toUpperCase()}: ${m.content}`).join('\n\n');
-            const blob = new Blob([text], { type: 'text/plain' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `jan-chat-export.txt`;
-            a.click();
-        }
+        // Device detection for input behavior
+        const isTouchDevice = () => {
+            return (('ontouchstart' in window) ||
+                (navigator.maxTouchPoints > 0) ||
+                (navigator.msMaxTouchPoints > 0));
+        };
 
-        document.onkeydown = (e) => {
-            if (e.altKey) {
-                if (e.key.toLowerCase() === 'c') { e.preventDefault(); clearChat(); }
-                if (e.key.toLowerCase() === 'e') { e.preventDefault(); exportChat(); }
-                if (e.key.toLowerCase() === 's') {
-                    e.preventDefault();
-                    const nextIdx = (themeSelect.selectedIndex + 1) % themeSelect.options.length;
-                    themeSelect.selectedIndex = nextIdx;
-                    setTheme(themeSelect.options[nextIdx].value);
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                if (!isTouchDevice()) {
+                    if (!e.shiftKey) {
+                        e.preventDefault();
+                        send();
+                    }
                 }
             }
-        };
+        });
 
-        const isTouch = () => (('ontouchstart' in window) || (navigator.maxTouchPoints > 0));
-        input.onkeydown = (e) => {
-            if (e.key === 'Enter' && !isTouch() && !e.shiftKey) {
-                e.preventDefault();
-                send();
-            }
-        };
-
-        input.oninput = function() {
+        // Auto-resize textarea
+        input.addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = (this.scrollHeight) + 'px';
-        };
+        });
 
         async function send() {
             const msg = input.value.trim();
-            if (!msg || btn.disabled || !navigator.onLine) return;
+            if (!msg || btn.disabled) return;
 
-            const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            addMsg(msg, 'user', true, timestamp);
-            chatHistory.push({ role: 'user', content: msg, timestamp });
-            localStorage.setItem('chatHistory', JSON.stringify(chatHistory.slice(-50)));
-            
+            const lastMsgTime = parseInt(localStorage.getItem('lastMsgTime') || '0');
+            const now = Date.now();
+            if (now - lastMsgTime < 1000) {
+                addMsg('Please wait a second before sending another message.', 'ai');
+                return;
+            }
+            localStorage.setItem('lastMsgTime', now.toString());
+
+            addMsg(msg, 'user', true);
+            chatHistory.push({ role: 'user', content: msg });
+            saveHistory();
+
             input.value = '';
             input.style.height = 'auto';
             btn.disabled = true;
@@ -293,54 +394,52 @@
                 const res = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ messages: chatHistory.map(({role, content}) => ({role, content})) })
+                    body: JSON.stringify({ messages: chatHistory })
                 });
+
                 const data = await res.json();
                 typingIndicator.style.display = 'none';
-                const aiTs = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                const reply = data.response || data.error || 'Error';
-                addMsg(reply, 'ai', true, aiTs);
-                chatHistory.push({ role: 'assistant', content: reply, timestamp: aiTs });
-                localStorage.setItem('chatHistory', JSON.stringify(chatHistory.slice(-50)));
+
+                if (!res.ok) {
+                    const errorMsg = res.status === 429 ? 'Too many requests. Wait a moment.' : 
+                                   res.status >= 500 ? 'Server error. Try again later.' : 
+                                   ('Error: ' + (data.error || 'Something went wrong'));
+                    addMsg(errorMsg, 'ai');
+                    return;
+                }
+
+                const reply = data.response || data.error;
+                addMsg(reply, 'ai', true);
+                chatHistory.push({ role: 'assistant', content: reply });
+                saveHistory();
             } catch (err) {
                 typingIndicator.style.display = 'none';
-                addMsg('Error: ' + err.message, 'ai', false, new Date().toLocaleTimeString());
+                addMsg('Network error: ' + err.message, 'ai');
             } finally {
                 btn.disabled = false;
                 input.focus();
             }
         }
 
-        function addMsg(text, type, isMd = false, timestamp = '') {
-            const container = document.createElement('div');
-            container.className = 'msg-container';
+        function addMsg(text, type, isMd = false) {
             const div = document.createElement('div');
             div.className = 'msg ' + type;
+
             if (isMd) {
                 div.innerHTML = marked.parse(text);
-                div.querySelectorAll('pre').forEach(pre => {
-                    const wrap = document.createElement('div');
-                    wrap.className = 'code-container';
-                    pre.parentNode.insertBefore(wrap, pre);
-                    wrap.appendChild(pre);
-                    const cp = document.createElement('button');
-                    cp.className = 'copy-btn'; cp.textContent = 'Copy';
-                    cp.onclick = () => {
-                        navigator.clipboard.writeText(pre.textContent);
-                        cp.textContent = 'Copied!';
-                        setTimeout(() => cp.textContent = 'Copy', 2000);
-                    };
-                    wrap.appendChild(cp);
-                });
-            } else { div.textContent = text; }
-            container.appendChild(div);
-            if (timestamp) {
-                const ts = document.createElement('div');
-                ts.className = 'timestamp'; ts.textContent = timestamp;
-                container.appendChild(ts);
+            } else {
+                div.textContent = text;
             }
-            chat.appendChild(container);
+
+            chat.appendChild(div);
             chat.scrollTop = chat.scrollHeight;
+        }
+
+        function saveHistory() {
+            if (chatHistory.length > 50) {
+                chatHistory = chatHistory.slice(-50);
+            }
+            localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
         }
     </script>
 </body>
