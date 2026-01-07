@@ -3,19 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self' https://jan-agent-backend-test.onrender.com http://localhost:5000; img-src 'self' data:; font-src 'self';">
     <title>Jan Agent</title>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Subresource Integrity (SRI) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" integrity="sha384-948ahk4ZmxYVYOc+rxN1H2gM1EJ2Duhp7uHtZ4WSLkV4Vtx5MUqnV+l7u9B+jFv+" crossorigin="anonymous"></script>
     <style>
         :root {
             --transition-speed: 0.4s;
         }
 
-        /* Global Transition for ALL elements and properties */
         *, *::before, *::after { 
             margin: 0; 
             padding: 0; 
             box-sizing: border-box; 
-            transition: all var(--transition-speed) ease-in-out !important;
+            transition: background-color var(--transition-speed) ease-in-out, color var(--transition-speed) ease-in-out, border-color var(--transition-speed) ease-in-out, box-shadow var(--transition-speed) ease-in-out !important;
         }
         
         body.light { background: #fff; color: #000; }
@@ -55,6 +57,7 @@
             gap: 10px;
             justify-content: center;
             align-items: center;
+            flex-wrap: wrap;
         }
 
         select.theme-dropdown {
@@ -68,19 +71,29 @@
             outline: none;
         }
         
-        .clear-btn {
+        .btn-action {
             background: transparent;
-            border: 1px solid #ff4444;
-            color: #ff4444;
+            border: 1px solid gray;
+            color: inherit;
             padding: 5px 10px;
             border-radius: 5px;
             cursor: pointer;
             font-size: 14px;
         }
 
-        .clear-btn:hover {
+        .btn-action:hover {
+            background: rgba(128, 128, 128, 0.2);
+        }
+
+        .offline-banner {
             background: #ff4444;
             color: white;
+            text-align: center;
+            padding: 5px;
+            font-size: 12px;
+            display: none;
+            border-radius: 5px;
+            margin-bottom: 10px;
         }
         
         main {
@@ -106,27 +119,40 @@
         body.green .chat { background: #050a07; }
         body.purple .chat { background: #0d0619; }
         
-        .msg {
+        .msg-container {
+            display: flex;
+            flex-direction: column;
             margin-bottom: 15px;
+        }
+
+        .msg {
             padding: 10px 15px;
             word-wrap: break-word;
             overflow-wrap: break-word;
             border-radius: 12px;
             max-width: 85%;
             line-height: 1.5;
+            position: relative;
         }
         
         .user {
             align-self: flex-end;
-            margin-left: auto;
             border-bottom-right-radius: 2px;
         }
         
         .ai {
             align-self: flex-start;
-            margin-right: auto;
             border-bottom-left-radius: 2px;
         }
+
+        .timestamp {
+            font-size: 10px;
+            color: gray;
+            margin-top: 4px;
+            align-self: flex-end;
+        }
+
+        .ai + .timestamp { align-self: flex-start; }
 
         body.light .user { background: #007bff; color: white; }
         body.dark .user { background: #333; color: white; }
@@ -140,6 +166,30 @@
         body.green .ai { background: #0f2415; color: #c9e4ca; }
         body.purple .ai { background: #160d25; color: #e6d5f5; }
         
+        .code-container {
+            position: relative;
+            margin: 10px 0;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(128, 128, 128, 0.5);
+            color: white;
+            border: none;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .code-container:hover .copy-btn {
+            opacity: 1;
+        }
+
         .ai code, .user code {
             background: rgba(0,0,0,0.1);
             padding: 2px 4px;
@@ -151,7 +201,6 @@
             padding: 10px;
             overflow-x: auto;
             border-radius: 8px;
-            margin: 10px 0;
         }
         
         .typing {
@@ -179,8 +228,7 @@
             border-radius: 20px;
             background: transparent;
             color: inherit;
-            outline: none !important; /* Remove black line/outline */
-            box-shadow: none !important;
+            outline: none !important;
         }
         
         button.send {
@@ -214,12 +262,14 @@
     </style>
 </head>
 <body class="light">
+    <div id="offlineBanner" class="offline-banner">You are currently offline. Some features may not work.</div>
+
     <header>
         <svg class="logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <text x="50" y="75" font-size="70" font-weight="bold" text-anchor="middle" fill="#555" font-family="Arial">J</text>
         </svg>
         <h1>Jan Agent</h1>
-        <div class="version">v0.4.0-alpha</div>
+        <div class="version">v0.5.0-beta</div>
     </header>
 
     <div class="controls">
@@ -230,7 +280,8 @@
             <option value="green">Green Theme</option>
             <option value="purple">Purple Theme</option>
         </select>
-        <button class="clear-btn" onclick="clearChat()">Clear Chat</button>
+        <button class="btn-action" onclick="exportChat()" title="Export to .txt">Export</button>
+        <button class="btn-action" onclick="clearChat()" style="border-color: #ff4444; color: #ff4444;">Clear</button>
     </div>
 
     <main>
@@ -243,7 +294,7 @@
         </div>
     </main>
 
-    <footer>© Jan 2026. All rights reserved.</footer>
+    <footer>© Jan 2026. All rights reserved. (Alt+C: Clear, Alt+F: Focus, Esc: Blur)</footer>
 
     <script>
         const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
@@ -255,8 +306,14 @@
         const btn = document.getElementById('btn');
         const typingIndicator = document.getElementById('typing');
         const themeSelect = document.getElementById('themeSelect');
+        const offlineBanner = document.getElementById('offlineBanner');
         
         let chatHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
+
+        // Offline Detection
+        window.addEventListener('online', () => offlineBanner.style.display = 'none');
+        window.addEventListener('offline', () => offlineBanner.style.display = 'block');
+        if (!navigator.onLine) offlineBanner.style.display = 'block';
 
         // Initialize theme
         const savedTheme = localStorage.getItem('theme') || 'light';
@@ -265,7 +322,7 @@
 
         // Restore chat history
         window.onload = () => {
-            chatHistory.forEach(msg => addMsg(msg.content, msg.role, true));
+            chatHistory.forEach(msg => addMsg(msg.content, msg.role, true, msg.timestamp));
             input.focus();
         };
 
@@ -282,25 +339,44 @@
             }
         }
 
-        // Device detection for input behavior
-        const isTouchDevice = () => {
-            return (('ontouchstart' in window) ||
-                (navigator.maxTouchPoints > 0) ||
-                (navigator.msMaxTouchPoints > 0));
-        };
+        function exportChat() {
+            if (chatHistory.length === 0) return alert('No messages to export.');
+            const text = chatHistory.map(m => `[${m.timestamp || 'N/A'}] ${m.role.toUpperCase()}: ${m.content}`).join('\n\n');
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `jan-chat-export-${new Date().toISOString().slice(0,10)}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
 
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                if (!isTouchDevice()) {
-                    if (!e.shiftKey) {
-                        e.preventDefault();
-                        send();
-                    }
-                }
+        // Keyboard Shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.altKey && e.key.toLowerCase() === 'c') {
+                e.preventDefault();
+                clearChat();
+            }
+            if (e.altKey && e.key.toLowerCase() === 'f') {
+                e.preventDefault();
+                input.focus();
+            }
+            if (e.key === 'Escape') {
+                input.blur();
             }
         });
 
-        // Auto-resize textarea
+        const isTouchDevice = () => {
+            return (('ontouchstart' in window) || (navigator.maxTouchPoints > 0));
+        };
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !isTouchDevice() && !e.shiftKey) {
+                e.preventDefault();
+                send();
+            }
+        });
+
         input.addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = (this.scrollHeight) + 'px';
@@ -310,16 +386,14 @@
             const msg = input.value.trim();
             if (!msg || btn.disabled) return;
 
-            const lastMsgTime = parseInt(localStorage.getItem('lastMsgTime') || '0');
-            const now = Date.now();
-            if (now - lastMsgTime < 1000) {
-                addMsg('Please wait a second before sending another message.', 'ai');
+            if (!navigator.onLine) {
+                addMsg('You are offline. Please check your connection.', 'ai');
                 return;
             }
-            localStorage.setItem('lastMsgTime', now.toString());
 
-            addMsg(msg, 'user', true);
-            chatHistory.push({ role: 'user', content: msg });
+            const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            addMsg(msg, 'user', true, timestamp);
+            chatHistory.push({ role: 'user', content: msg, timestamp });
             saveHistory();
             
             input.value = '';
@@ -332,51 +406,77 @@
                 const res = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ messages: chatHistory })
+                    body: JSON.stringify({ messages: chatHistory.map(({role, content}) => ({role, content})) })
                 });
 
                 const data = await res.json();
                 typingIndicator.style.display = 'none';
                 
+                const aiTimestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 if (!res.ok) {
-                    const errorMsg = res.status === 429 ? 'Too many requests. Wait a moment.' : 
-                                   res.status >= 500 ? 'Server error. Try again later.' : 
-                                   ('Error: ' + (data.error || 'Something went wrong'));
-                    addMsg(errorMsg, 'ai');
+                    const errorMsg = res.status === 429 ? 'Too many requests.' : 'Something went wrong.';
+                    addMsg(errorMsg, 'ai', false, aiTimestamp);
                     return;
                 }
                 
                 const reply = data.response || data.error;
-                addMsg(reply, 'ai', true);
-                chatHistory.push({ role: 'assistant', content: reply });
+                addMsg(reply, 'ai', true, aiTimestamp);
+                chatHistory.push({ role: 'assistant', content: reply, timestamp: aiTimestamp });
                 saveHistory();
             } catch (err) {
                 typingIndicator.style.display = 'none';
-                addMsg('Network error: ' + err.message, 'ai');
+                addMsg('Network error: ' + err.message, 'ai', false, new Date().toLocaleTimeString());
             } finally {
                 btn.disabled = false;
                 input.focus();
             }
         }
 
-        function addMsg(text, type, isMd = false) {
+        function addMsg(text, type, isMd = false, timestamp = '') {
+            const container = document.createElement('div');
+            container.className = 'msg-container';
+
             const div = document.createElement('div');
             div.className = 'msg ' + type;
             
             if (isMd) {
                 div.innerHTML = marked.parse(text);
+                // Add copy buttons to code blocks
+                div.querySelectorAll('pre').forEach(pre => {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'code-container';
+                    pre.parentNode.insertBefore(wrapper, pre);
+                    wrapper.appendChild(pre);
+
+                    const copyBtn = document.createElement('button');
+                    copyBtn.className = 'copy-btn';
+                    copyBtn.textContent = 'Copy';
+                    copyBtn.onclick = () => {
+                        navigator.clipboard.writeText(pre.textContent);
+                        copyBtn.textContent = 'Copied!';
+                        setTimeout(() => copyBtn.textContent = 'Copy', 2000);
+                    };
+                    wrapper.appendChild(copyBtn);
+                });
             } else {
                 div.textContent = text;
             }
             
-            chat.appendChild(div);
+            container.appendChild(div);
+
+            if (timestamp) {
+                const ts = document.createElement('div');
+                ts.className = 'timestamp';
+                ts.textContent = timestamp;
+                container.appendChild(ts);
+            }
+
+            chat.appendChild(container);
             chat.scrollTop = chat.scrollHeight;
         }
 
         function saveHistory() {
-            if (chatHistory.length > 50) {
-                chatHistory = chatHistory.slice(-50);
-            }
+            if (chatHistory.length > 50) chatHistory = chatHistory.slice(-50);
             localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
         }
     </script>
