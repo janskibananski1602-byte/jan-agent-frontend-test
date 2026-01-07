@@ -25,30 +25,13 @@
             transition: background-color var(--transition-speed) ease-in-out, color var(--transition-speed) ease-in-out !important;
         }
 
-        /* Custom Scrollbar for everything */
+        /* Hide scrollbars but keep scrollable */
         *::-webkit-scrollbar {
-            width: 10px;
-            height: 10px;
+            display: none;
         }
-        *::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.05);
-            border-radius: 10px;
-        }
-        *::-webkit-scrollbar-thumb {
-            background: rgba(136, 136, 136, 0.5);
-            border-radius: 10px;
-            border: 2px solid transparent;
-            background-clip: content-box;
-        }
-        *::-webkit-scrollbar-thumb:hover {
-            background: rgba(85, 85, 85, 0.8);
-            border: 2px solid transparent;
-            background-clip: content-box;
-        }
-        /* For Firefox */
         * {
-            scrollbar-width: thin;
-            scrollbar-color: rgba(136, 136, 136, 0.5) rgba(0, 0, 0, 0.05);
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
         }
 
         body {
