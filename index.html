@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -30,10 +31,22 @@
             display: flex;
             flex-direction: column;
             transition: transform 0.3s ease;
+            position: relative;
+            z-index: 100;
         }
 
         .sidebar.hidden {
             transform: translateX(-100%);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100vh;
+                width: 280px;
+            }
         }
 
         .sidebar-header {
@@ -88,54 +101,19 @@
             margin: 10px 0;
         }
 
-        .folder {
-            margin-bottom: 5px;
-        }
-
-        .folder-header {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            padding: 8px;
-            cursor: pointer;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-
-        .folder-header:hover {
-            background: var(--input-bg, #fff);
-        }
-
-        .folder-icon {
-            font-size: 12px;
-        }
-
-        .folder-chats {
-            margin-left: 15px;
-            display: none;
-        }
-
-        .folder.open .folder-chats {
-            display: block;
-        }
-
-        .folder.open .folder-icon::before {
-            content: '▼';
-        }
-
-        .folder-icon::before {
-            content: '▶';
+        .chat-item-wrapper {
+            position: relative;
+            margin: 3px 0;
         }
 
         .chat-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             padding: 8px 10px;
-            margin: 3px 0;
             border-radius: 4px;
             cursor: pointer;
             font-size: 13px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
 
         .chat-item:hover {
@@ -145,6 +123,55 @@
         .chat-item.active {
             background: var(--border-color, #ddd);
             font-weight: bold;
+        }
+
+        .chat-name {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chat-menu-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 0 5px;
+            color: var(--text-color, #000);
+            display: none;
+        }
+
+        .chat-item-wrapper:hover .chat-menu-btn,
+        .chat-item.active .chat-menu-btn {
+            display: block;
+        }
+
+        .chat-menu {
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background: var(--input-bg, #fff);
+            border: 1px solid var(--border-color, #ccc);
+            border-radius: 6px;
+            padding: 5px 0;
+            display: none;
+            z-index: 1000;
+            min-width: 150px;
+        }
+
+        .chat-menu.show {
+            display: block;
+        }
+
+        .chat-menu-item {
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .chat-menu-item:hover {
+            background: var(--chat-bg, #f5f5f5);
         }
 
         .sidebar-footer {
@@ -174,6 +201,7 @@
             display: flex;
             flex-direction: column;
             position: relative;
+            min-width: 0;
         }
 
         .toggle-sidebar {
@@ -203,11 +231,34 @@
             font-size: 12px; display: none; margin: 0 10px;
         }
         
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 0 10px 10px 10px;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            padding: 6px 12px;
+            background: var(--input-bg, #fff);
+            border: 1px solid var(--border-color, #ccc);
+            color: var(--text-color, #000);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .control-btn:hover {
+            opacity: 0.8;
+        }
+
         main { 
             flex: 1; 
             display: flex; 
             flex-direction: column; 
             padding: 0 10px 10px 10px;
+            min-height: 0;
         }
 
         .chat {
@@ -218,6 +269,7 @@
             margin-bottom: 10px;
             border-radius: 10px;
             background-color: var(--chat-bg, #fafafa);
+            min-height: 0;
         }
         
         .msg-container { display: flex; flex-direction: column; margin-bottom: 15px; }
@@ -225,6 +277,8 @@
             padding: 12px 16px; border-radius: 15px; max-width: 85%;
             line-height: 1.5; position: relative;
             border: 1px solid rgba(128,128,128,0.2);
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
         
         .user {
@@ -282,7 +336,7 @@
         }
         button.send:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* Settings Modal */
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -292,6 +346,7 @@
             z-index: 1000;
             justify-content: center;
             align-items: center;
+            padding: 20px;
         }
 
         .modal.show { display: flex; }
@@ -301,7 +356,9 @@
             padding: 20px;
             border-radius: 10px;
             max-width: 500px;
-            width: 90%;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
             border: 1px solid var(--border-color, #ccc);
         }
 
@@ -325,6 +382,18 @@
             color: var(--text-color, #000);
         }
 
+        .setting-section {
+            margin: 20px 0;
+        }
+
+        .setting-section-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid var(--border-color, #ccc);
+        }
+
         .setting-row {
             margin: 15px 0;
             display: flex;
@@ -343,17 +412,63 @@
             border-radius: 6px;
             cursor: pointer;
         }
+
+        input[type="text"] {
+            padding: 8px;
+            border: 1px solid var(--border-color, #ccc);
+            border-radius: 6px;
+            background: var(--input-bg, #fff);
+            color: var(--text-color, #000);
+            font-size: 14px;
+            width: 100%;
+        }
+
+        .modal-btn {
+            padding: 8px 16px;
+            margin: 5px;
+            border: 1px solid var(--border-color, #ccc);
+            background: var(--input-bg, #fff);
+            color: var(--text-color, #000);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .modal-btn:hover {
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .toggle-sidebar {
+                top: 5px;
+                left: 5px;
+                padding: 6px 10px;
+            }
+            
+            header {
+                padding: 10px;
+            }
+            
+            .logo {
+                width: 50px;
+                height: 50px;
+            }
+            
+            h1 {
+                font-size: 20px;
+            }
+        }
     </style>
 </head>
 <body>
     <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
+    <div class="sidebar hidden" id="sidebar">
         <div class="sidebar-header">
             <svg class="sidebar-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                 <text x="50" y="75" font-size="70" font-weight="bold" text-anchor="middle">J</text>
             </svg>
             <div class="sidebar-title">Jan Agent</div>
-            <div class="sidebar-version">v0.6.0-beta</div>
+            <div class="sidebar-version">v0.7.0-beta</div>
         </div>
 
         <div class="sidebar-content">
@@ -364,8 +479,6 @@
 
         <div class="sidebar-footer">
             <button class="footer-btn" onclick="openSettings()">⚙️ Settings</button>
-            <button class="footer-btn" onclick="exportChat()">💾 Export</button>
-            <button class="footer-btn" onclick="clearChat()">🗑️ Clear</button>
         </div>
     </div>
 
@@ -380,8 +493,14 @@
                 <text x="50" y="75" font-size="70" font-weight="bold" text-anchor="middle">J</text>
             </svg>
             <h1>Jan Agent</h1>
-            <div class="version">v0.6.0-beta</div>
+            <div class="version">v0.7.0-beta</div>
         </header>
+
+        <div class="controls" id="controls" style="display: none;">
+            <button class="control-btn" onclick="exportCurrentChat()">💾 Export</button>
+            <button class="control-btn" onclick="clearCurrentChat()">🗑️ Clear</button>
+            <button class="control-btn" onclick="renameCurrentChat()">✏️ Rename</button>
+        </div>
 
         <main>
             <div class="chat" id="chat"></div>
@@ -400,13 +519,32 @@
                 <div class="modal-title">Settings</div>
                 <button class="close-btn" onclick="closeSettings()">×</button>
             </div>
-            <div class="setting-row">
-                <div class="setting-label">Background Color:</div>
-                <input type="color" id="bgColor" value="#ffffff" onchange="updateTheme()">
+            
+            <div class="setting-section">
+                <div class="setting-section-title">Appearance</div>
+                <div class="setting-row">
+                    <div class="setting-label">Background Color:</div>
+                    <input type="color" id="bgColor" value="#ffffff" onchange="updateTheme()">
+                </div>
+                <div class="setting-row">
+                    <div class="setting-label">Text Color:</div>
+                    <input type="color" id="textColor" value="#000000" onchange="updateTheme()">
+                </div>
             </div>
-            <div class="setting-row">
-                <div class="setting-label">Text Color:</div>
-                <input type="color" id="textColor" value="#000000" onchange="updateTheme()">
+        </div>
+    </div>
+
+    <!-- Rename Modal -->
+    <div class="modal" id="renameModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Rename Chat</div>
+                <button class="close-btn" onclick="closeRename()">×</button>
+            </div>
+            <input type="text" id="renameInput" placeholder="Enter new name">
+            <div style="margin-top: 15px; text-align: right;">
+                <button class="modal-btn" onclick="closeRename()">Cancel</button>
+                <button class="modal-btn" onclick="saveRename()">Save</button>
             </div>
         </div>
     </div>
@@ -424,12 +562,16 @@
         const offlineBanner = document.getElementById('offlineBanner');
         const sidebar = document.getElementById('sidebar');
         const settingsModal = document.getElementById('settingsModal');
+        const renameModal = document.getElementById('renameModal');
+        const renameInput = document.getElementById('renameInput');
         const chatHistoryEl = document.getElementById('chatHistory');
+        const controlsEl = document.getElementById('controls');
         
         let allChats = JSON.parse(localStorage.getItem('allChats')) || {};
-        let currentChatId = localStorage.getItem('currentChatId') || generateId();
-        let folders = JSON.parse(localStorage.getItem('folders')) || {};
+        let currentChatId = localStorage.getItem('currentChatId') || null;
         let isSending = false;
+        let currentMenuChatId = null;
+        let renameTargetId = null;
 
         const isDesktop = !('ontouchstart' in window) && window.innerWidth > 768;
 
@@ -446,14 +588,19 @@
         textColorPicker.value = savedText;
         updateTheme();
 
-        if (!allChats[currentChatId]) {
-            allChats[currentChatId] = { messages: [], name: 'New Chat', folder: null };
-            saveChats();
+        if (currentChatId && allChats[currentChatId]) {
+            loadChat(currentChatId);
         }
 
-        loadChat(currentChatId);
         renderChatHistory();
         input.focus();
+
+        // Close menus on outside click
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.chat-menu-btn')) {
+                document.querySelectorAll('.chat-menu').forEach(m => m.classList.remove('show'));
+            }
+        });
 
         function generateId() {
             return Date.now().toString(36) + Math.random().toString(36).substr(2);
@@ -461,7 +608,6 @@
 
         function saveChats() {
             localStorage.setItem('allChats', JSON.stringify(allChats));
-            localStorage.setItem('folders', JSON.stringify(folders));
         }
 
         function toggleSidebar() {
@@ -530,12 +676,15 @@
 
         function newChat() {
             const id = generateId();
-            allChats[id] = { messages: [], name: 'New Chat', folder: null };
+            allChats[id] = { messages: [], name: 'New Chat' };
             currentChatId = id;
             localStorage.setItem('currentChatId', id);
             saveChats();
             loadChat(id);
             renderChatHistory();
+            if (window.innerWidth <= 768) {
+                sidebar.classList.add('hidden');
+            }
         }
 
         function loadChat(id) {
@@ -546,70 +695,133 @@
             if (chatData && chatData.messages) {
                 chatData.messages.forEach(msg => addMsg(msg.content, msg.role, msg.role === 'assistant', msg.timestamp));
             }
+            controlsEl.style.display = 'flex';
         }
 
         function renderChatHistory() {
             chatHistoryEl.innerHTML = '';
             
-            // Group chats by folder
-            const folderChats = {};
-            const noFolderChats = [];
-            
-            Object.keys(allChats).forEach(id => {
+            const sortedChats = Object.keys(allChats).sort((a, b) => {
+                const aTime = allChats[a].messages[allChats[a].messages.length - 1]?.isoTimestamp || 0;
+                const bTime = allChats[b].messages[allChats[b].messages.length - 1]?.isoTimestamp || 0;
+                return new Date(bTime) - new Date(aTime);
+            });
+
+            sortedChats.forEach(id => {
                 const chatData = allChats[id];
-                if (chatData.folder) {
-                    if (!folderChats[chatData.folder]) folderChats[chatData.folder] = [];
-                    folderChats[chatData.folder].push({ id, ...chatData });
-                } else {
-                    noFolderChats.push({ id, ...chatData });
-                }
-            });
-            
-            // Render folders
-            Object.keys(folderChats).forEach(folderName => {
-                const folder = document.createElement('div');
-                folder.className = 'folder';
+                const wrapper = document.createElement('div');
+                wrapper.className = 'chat-item-wrapper';
                 
-                const header = document.createElement('div');
-                header.className = 'folder-header';
-                header.innerHTML = `<span class="folder-icon"></span><span>${folderName}</span>`;
-                header.onclick = () => folder.classList.toggle('open');
-                
-                const chatsDiv = document.createElement('div');
-                chatsDiv.className = 'folder-chats';
-                
-                folderChats[folderName].forEach(chatData => {
-                    const item = document.createElement('div');
-                    item.className = 'chat-item' + (chatData.id === currentChatId ? ' active' : '');
-                    item.textContent = chatData.name;
-                    item.onclick = () => { loadChat(chatData.id); renderChatHistory(); };
-                    chatsDiv.appendChild(item);
-                });
-                
-                folder.appendChild(header);
-                folder.appendChild(chatsDiv);
-                chatHistoryEl.appendChild(folder);
-            });
-            
-            // Render non-folder chats
-            noFolderChats.forEach(chatData => {
                 const item = document.createElement('div');
-                item.className = 'chat-item' + (chatData.id === currentChatId ? ' active' : '');
-                item.textContent = chatData.name;
-                item.onclick = () => { loadChat(chatData.id); renderChatHistory(); };
-                chatHistoryEl.appendChild(item);
+                item.className = 'chat-item' + (id === currentChatId ? ' active' : '');
+                
+                const name = document.createElement('div');
+                name.className = 'chat-name';
+                name.textContent = chatData.name;
+                name.onclick = () => { loadChat(id); renderChatHistory(); if (window.innerWidth <= 768) sidebar.classList.add('hidden'); };
+                
+                const menuBtn = document.createElement('button');
+                menuBtn.className = 'chat-menu-btn';
+                menuBtn.textContent = '⋮';
+                menuBtn.onclick = (e) => { e.stopPropagation(); toggleChatMenu(id, wrapper); };
+                
+                item.appendChild(name);
+                item.appendChild(menuBtn);
+                
+                const menu = document.createElement('div');
+                menu.className = 'chat-menu';
+                menu.innerHTML = `
+                    <div class="chat-menu-item" onclick="renameChatPrompt('${id}')">✏️ Rename</div>
+                    <div class="chat-menu-item" onclick="exportChatById('${id}')">💾 Export</div>
+                    <div class="chat-menu-item" onclick="clearChatById('${id}')">🗑️ Clear</div>
+                    <div class="chat-menu-item" onclick="deleteChat('${id}')">❌ Delete</div>
+                `;
+                
+                wrapper.appendChild(item);
+                wrapper.appendChild(menu);
+                chatHistoryEl.appendChild(wrapper);
             });
         }
 
-        function clearChat() {
-            chat.innerHTML = '';
-            allChats[currentChatId].messages = [];
-            saveChats();
+        function toggleChatMenu(id, wrapper) {
+            document.querySelectorAll('.chat-menu').forEach(m => {
+                if (m.parentElement !== wrapper) m.classList.remove('show');
+            });
+            wrapper.querySelector('.chat-menu').classList.toggle('show');
         }
 
-        function exportChat() {
-            const chatData = allChats[currentChatId];
-            if (!chatData || chatData.messages.length === 0) { alert('No messages to export'); return; }
+        function deleteChat(id) {
+            if (confirm('Delete this chat?')) {
+                delete allChats[id];
+                if (currentChatId === id) {
+                    currentChatId = null;
+                    localStorage.removeItem('currentChatId');
+                    chat.innerHTML = '';
+                    controlsEl.style.display = 'none';
+                }
+                saveChats();
+                renderChatHistory();
+            }
+        }
+
+        function renameChatPrompt(id) {
+            renameTargetId = id;
+            renameInput.value = allChats[id].name;
+            renameModal.classList.add('show');
+            document.querySelectorAll('.chat-menu').forEach(m => m.classList.remove('show'));
+        }
+
+        function closeRename() {
+            renameModal.classList.remove('show');
+            renameTargetId = null;
+        }
+
+        function saveRename() {
+            if (renameTargetId && renameInput.value.trim()) {
+                allChats[renameTargetId].name = renameInput.value.trim();
+                saveChats();
+                renderChatHistory();
+                closeRename();
+            }
+        }
+
+        function renameCurrentChat() {
+            if (currentChatId) {
+                renameChatPrompt(currentChatId);
+            }
+        }
+
+        function clearCurrentChat() {
+            if (currentChatId && confirm('Clear this chat?')) {
+                chat.innerHTML = '';
+                allChats[currentChatId].messages = [];
+                saveChats();
+            }
+        }
+
+        function clearChatById(id) {
+            if (confirm('Clear this chat?')) {
+                allChats[id].messages = [];
+                if (currentChatId === id) {
+                    chat.innerHTML = '';
+                }
+                saveChats();
+            }
+            document.querySelectorAll('.chat-menu').forEach(m => m.classList.remove('show'));
+        }
+
+        function exportCurrentChat() {
+            if (currentChatId) {
+                exportChatById(currentChatId);
+            }
+        }
+
+        function exportChatById(id) {
+            const chatData = allChats[id];
+            if (!chatData || chatData.messages.length === 0) { 
+                alert('No messages to export'); 
+                return; 
+            }
             const text = chatData.messages.map(m => {
                 const role = m.role === 'assistant' ? 'JAN AGENT' : m.role.toUpperCase();
                 const content = m.content.replace(/[""]/g, '"').replace(/['']/g, "'").replace(/—/g, '-').replace(/…/g, '...');
@@ -618,8 +830,8 @@
             const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = `jan-chat-${Date.now()}.txt`;
-            a.click();
+            a.download = `${chatData.name}-${Date.now()}.txt`;
+            a.click();      document.querySelectorAll('.chat-menu').forEach(m => m.classList.remove('show'));
         }
 
         input.onkeydown = (e) => {
@@ -637,6 +849,11 @@
         async function send() {
             const msg = input.value.trim();
             if (!msg || isSending || !navigator.onLine) return;
+
+            // Create new chat if none exists
+            if (!currentChatId) {
+                newChat();
+            }
 
             isSending = true;
             const now = new Date();
