@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Content Security Policy - Optimized for functionality -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self' https://jan-agent-backend-test.onrender.com http://localhost:5000; img-src 'self' data:; font-src 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://jan-agent-backend-test.onrender.com http://localhost:5000; img-src 'self' data:; font-src 'self';">
     <title>Jan Agent</title>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" integrity="sha384-948ahk4ZmxYVYOc+rxN1H2gM1EJ2Duhp7uHtZ4WSLkV4Vtx5MUqnV+l7u9B+jFv+" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         :root {
             --transition-speed: 0.4s;
@@ -19,22 +18,18 @@
             --border-color: #cccccc;
         }
 
-        /* Global Transitions */
         * { 
             margin: 0; padding: 0; box-sizing: border-box; 
             transition: background-color var(--transition-speed) ease, 
                         color var(--transition-speed) ease, 
-                        border-color var(--transition-speed) ease, 
-                        filter 0.3s ease !important;
+                        border-color var(--transition-speed) ease;
         }
 
-        /* Security Blur */
         body.blurred {
             filter: blur(20px) grayscale(100%);
             pointer-events: none;
         }
 
-        /* Theme Definitions */
         body.light { --bg-color: #ffffff; --text-color: #000000; --chat-bg: #f9f9f9; }
         body.gray { --bg-color: #808080; --text-color: #ffffff; --chat-bg: #707070; }
         body.black { --bg-color: #1a1a1a; --text-color: #ffffff; --chat-bg: #111111; }
@@ -135,8 +130,7 @@
             flex: 1; padding: 12px; border: 1px solid var(--border-color);
             font-size: 16px; font-family: inherit; resize: none;
             min-height: 48px; max-height: 150px; border-radius: 24px;
-            background: transparent; color: inherit; outline: none !important;
-            box-shadow: none !important;
+            background: transparent; color: inherit; outline: none;
         }
         
         button.send {
@@ -160,7 +154,7 @@
     </header>
 
     <div class="controls">
-        <select id="themeSelect" onchange="setTheme(this.value)">
+        <select id="themeSelect" onchange="setTheme(this.value)" title="Use Ctrl+S to cycle themes">
             <option value="light">Light</option><option value="gray">Gray</option>
             <option value="black">Black</option><option value="obsidian">Obsidian</option>
             <option value="deep-blue">Deep Blue</option><option value="blue">Blue</option>
@@ -172,8 +166,8 @@
             <option value="deep-purple">Deep Purple</option><option value="purple">Purple</option>
             <option value="light-purple">Light Purple</option>
         </select>
-        <button class="btn-action" onclick="exportChat()">Export (Alt+E)</button>
-        <button class="btn-action" onclick="clearChat()" style="color: #ff4444; border-color: #ff4444;">Clear (Alt+C)</button>
+        <button class="btn-action" onclick="exportChat()">Export</button>
+        <button class="btn-action" onclick="clearChat()" style="color: #ff4444; border-color: #ff4444;">Clear</button>
     </div>
 
     <main>
@@ -185,7 +179,7 @@
         </div>
     </main>
 
-    <footer>© Jan 2026. Alt+S: Switch Theme | Alt+C: Clear | Alt+E: Export</footer>
+    <footer>© Jan 2026. All rights reserved.</footer>
 
     <script>
         const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
@@ -202,17 +196,15 @@
         let themeChangeCount = 0;
         let themeTimer = null;
         let isRainbow = false;
+        let isSending = false;
 
-        // Security Blur - Robust Implementation
         window.onblur = () => document.body.classList.add('blurred');
         window.onfocus = () => document.body.classList.remove('blurred');
 
-        // Offline Detection
         window.ononline = () => offlineBanner.style.display = 'none';
         window.onoffline = () => offlineBanner.style.display = 'block';
         if (!navigator.onLine) offlineBanner.style.display = 'block';
 
-        // Initialize
         const savedTheme = localStorage.getItem('theme') || 'light';
         document.body.className = savedTheme;
         themeSelect.value = savedTheme;
@@ -243,26 +235,21 @@
         }
 
         function exportChat() {
-            if (chatHistory.length === 0) return;
+            if (chatHistory.length === 0) { alert('No messages to export'); return; }
             const text = chatHistory.map(m => `[${m.timestamp || 'N/A'}] ${m.role.toUpperCase()}: ${m.content}`).join('\n\n');
             const blob = new Blob([text], { type: 'text/plain' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = `jan-chat-export.txt`;
+            a.download = `jan-chat-${Date.now()}.txt`;
             a.click();
         }
 
-        // Keyboard Shortcuts
         document.onkeydown = (e) => {
-            if (e.altKey) {
-                if (e.key.toLowerCase() === 'c') { e.preventDefault(); clearChat(); }
-                if (e.key.toLowerCase() === 'e') { e.preventDefault(); exportChat(); }
-                if (e.key.toLowerCase() === 's') {
-                    e.preventDefault();
-                    const nextIdx = (themeSelect.selectedIndex + 1) % themeSelect.options.length;
-                    themeSelect.selectedIndex = nextIdx;
-                    setTheme(themeSelect.options[nextIdx].value);
-                }
+            if (e.ctrlKey && e.key.toLowerCase() === 's') {
+                e.preventDefault();
+                const nextIdx = (themeSelect.selectedIndex + 1) % themeSelect.options.length;
+                themeSelect.selectedIndex = nextIdx;
+                setTheme(themeSelect.options[nextIdx].value);
             }
         };
 
@@ -281,10 +268,11 @@
 
         async function send() {
             const msg = input.value.trim();
-            if (!msg || btn.disabled || !navigator.onLine) return;
+            if (!msg || isSending || !navigator.onLine) return;
 
+            isSending = true;
             const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            addMsg(msg, 'user', true, timestamp);
+            addMsg(msg, 'user', false, timestamp);
             chatHistory.push({ role: 'user', content: msg, timestamp });
             localStorage.setItem('chatHistory', JSON.stringify(chatHistory.slice(-50)));
             
@@ -292,14 +280,19 @@
             input.style.height = 'auto';
             btn.disabled = true;
             typingIndicator.style.display = 'block';
-            chat.scrollTop = chat.scrollHeight;
 
             try {
                 const res = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ messages: chatHistory.map(({role, content}) => ({role, content})) })
+                    body: JSON.stringify({ messages: chatHistory.map(({role, content}) => ({role, content})) }),
+                    signal: AbortSignal.timeout(30000)
                 });
+                
+                if (!res.ok) {
+                    throw new Error(res.status === 429 ? 'Too many requests' : 'Server error');
+                }
+                
                 const data = await res.json();
                 typingIndicator.style.display = 'none';
                 const aiTs = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -309,9 +302,11 @@
                 localStorage.setItem('chatHistory', JSON.stringify(chatHistory.slice(-50)));
             } catch (err) {
                 typingIndicator.style.display = 'none';
-                addMsg('Error: ' + err.message, 'ai', false, new Date().toLocaleTimeString());
+                const errMsg = err.name === 'AbortError' ? 'Request timed out' : err.message;
+                addMsg('Error: ' + errMsg, 'ai', false, new Date().toLocaleTimeString());
             } finally {
                 btn.disabled = false;
+                isSending = false;
                 input.focus();
             }
         }
@@ -322,7 +317,7 @@
             const div = document.createElement('div');
             div.className = 'msg ' + type;
             
-            if (isMd) {
+            if (isMd && type === 'ai') {
                 div.innerHTML = marked.parse(text);
                 div.querySelectorAll('pre').forEach(pre => {
                     const wrap = document.createElement('div');
