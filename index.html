@@ -3,37 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Content Security Policy - Relaxed for inline styles and specific domains -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self' https://jan-agent-backend-test.onrender.com http://localhost:5000; img-src 'self' data:; font-src 'self';">
     <title>Jan Agent</title>
-    <!-- Subresource Integrity (SRI) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" integrity="sha384-948ahk4ZmxYVYOc+rxN1H2gM1EJ2Duhp7uHtZ4WSLkV4Vtx5MUqnV+l7u9B+jFv+" crossorigin="anonymous"></script>
     <style>
         :root {
             --transition-speed: 0.4s;
         }
 
-        /* Global Transition - Applied carefully to avoid breaking layout */
         *, *::before, *::after { 
             margin: 0; 
             padding: 0; 
             box-sizing: border-box; 
         }
         
-        /* Theme transitions applied to specific properties */
         body, .chat, textarea, select, button, .msg, .timestamp {
             transition: background-color var(--transition-speed) ease-in-out, 
                         color var(--transition-speed) ease-in-out, 
                         border-color var(--transition-speed) ease-in-out, 
-                        box-shadow var(--transition-speed) ease-in-out;
+                        box-shadow var(--transition-speed) ease-in-out,
+                        filter 0.3s ease-in-out;
         }
 
-        body.light { background: #fff; color: #000; }
-        body.dark { background: #000; color: #fff; }
-        body.blue { background: #1a2332; color: #e0e6ed; }
-        body.green { background: #0d1f12; color: #c9e4ca; }
-        body.purple { background: #1a0d2e; color: #e6d5f5; }
-        
+        /* Security Blur */
+        body.blurred {
+            filter: blur(15px) grayscale(100%);
+            pointer-events: none;
+            user-select: none;
+        }
+
+        /* Themes */
+        body.light { background: #ffffff; color: #000000; }
+        body.gray { background: #808080; color: #ffffff; }
+        body.black { background: #1a1a1a; color: #ffffff; }
+        body.obsidian { background: #0a0a0a; color: #e0e0e0; }
+        body.deep-blue { background: #000033; color: #e0e0ff; }
+        body.blue { background: #0000ff; color: #ffffff; }
+        body.light-blue { background: #add8e6; color: #000000; }
+        body.deep-green { background: #003300; color: #e0ffe0; }
+        body.green { background: #008000; color: #ffffff; }
+        body.light-green { background: #90ee90; color: #000000; }
+        body.dark-red { background: #8b0000; color: #ffffff; }
+        body.red { background: #ff0000; color: #ffffff; }
+        body.light-red { background: #ffcccb; color: #000000; }
+        body.deep-pink { background: #ff1493; color: #ffffff; }
+        body.pink { background: #ffc0cb; color: #000000; }
+        body.light-pink { background: #fff0f5; color: #000000; }
+        body.deep-purple { background: #301934; color: #e0d0e0; }
+        body.purple { background: #800080; color: #ffffff; }
+        body.light-purple { background: #e6e6fa; color: #000000; }
+
+        /* Rainbow Easter Egg */
+        @keyframes rainbow {
+            0% { background: #ff0000; }
+            14% { background: #ff7f00; }
+            28% { background: #ffff00; }
+            42% { background: #00ff00; }
+            56% { background: #0000ff; }
+            70% { background: #4b0082; }
+            84% { background: #8b00ff; }
+            100% { background: #ff0000; }
+        }
+        body.rainbow {
+            animation: rainbow 2s linear infinite !important;
+            color: white !important;
+            text-shadow: 1px 1px 2px black;
+        }
+        body.rainbow * { background: transparent !important; color: white !important; }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             padding: 10px;
@@ -44,17 +81,8 @@
             min-height: 100vh;
         }
         
-        header {
-            text-align: center;
-            margin-bottom: 15px;
-        }
-        
-        .logo {
-            width: 60px;
-            height: 60px;
-            margin: 0 auto 5px;
-        }
-        
+        header { text-align: center; margin-bottom: 15px; }
+        .logo { width: 60px; height: 60px; margin: 0 auto 5px; }
         h1 { font-size: 24px; }
         .version { font-size: 12px; color: gray; }
         
@@ -89,9 +117,7 @@
             font-size: 14px;
         }
 
-        .btn-action:hover {
-            background: rgba(128, 128, 128, 0.2);
-        }
+        .btn-action:hover { background: rgba(128, 128, 128, 0.2); }
 
         .offline-banner {
             background: #ff4444;
@@ -104,12 +130,7 @@
             margin-bottom: 10px;
         }
         
-        main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-        }
+        main { flex: 1; display: flex; flex-direction: column; width: 100%; }
 
         .chat {
             border: 1px solid gray;
@@ -121,18 +142,7 @@
             border-radius: 8px;
         }
         
-        body.light .chat { background: #fafafa; }
-        body.dark .chat { background: #111; }
-        body.blue .chat { background: #0f1621; }
-        body.green .chat { background: #050a07; }
-        body.purple .chat { background: #0d0619; }
-        
-        .msg-container {
-            display: flex;
-            flex-direction: column;
-            margin-bottom: 15px;
-        }
-
+        .msg-container { display: flex; flex-direction: column; margin-bottom: 15px; }
         .msg {
             padding: 10px 15px;
             word-wrap: break-word;
@@ -141,137 +151,48 @@
             max-width: 85%;
             line-height: 1.5;
             position: relative;
+            border: 1px solid rgba(128,128,128,0.3);
         }
         
-        .user {
-            align-self: flex-end;
-            border-bottom-right-radius: 2px;
-        }
-        
-        .ai {
-            align-self: flex-start;
-            border-bottom-left-radius: 2px;
-        }
+        .user { align-self: flex-end; border-bottom-right-radius: 2px; background: rgba(0, 123, 255, 0.2); }
+        .ai { align-self: flex-start; border-bottom-left-radius: 2px; background: rgba(128, 128, 128, 0.1); }
 
-        .timestamp {
-            font-size: 10px;
-            color: gray;
-            margin-top: 4px;
-            align-self: flex-end;
-        }
-
+        .timestamp { font-size: 10px; color: gray; margin-top: 4px; align-self: flex-end; }
         .ai + .timestamp { align-self: flex-start; }
 
-        body.light .user { background: #007bff; color: white; }
-        body.dark .user { background: #333; color: white; }
-        body.blue .user { background: #2a3f5f; color: white; }
-        body.green .user { background: #1a3d20; color: white; }
-        body.purple .user { background: #2d1a4d; color: white; }
-        
-        body.light .ai { background: #e9e9eb; color: black; }
-        body.dark .ai { background: #1a1a1a; color: white; }
-        body.blue .ai { background: #1e2d3d; color: #e0e6ed; }
-        body.green .ai { background: #0f2415; color: #c9e4ca; }
-        body.purple .ai { background: #160d25; color: #e6d5f5; }
-        
-        .code-container {
-            position: relative;
-            margin: 10px 0;
-        }
-
+        .code-container { position: relative; margin: 10px 0; }
         .copy-btn {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: rgba(128, 128, 128, 0.5);
-            color: white;
-            border: none;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 10px;
-            cursor: pointer;
-            opacity: 0;
-            transition: opacity 0.2s;
+            position: absolute; top: 5px; right: 5px;
+            background: rgba(128, 128, 128, 0.5); color: white;
+            border: none; padding: 2px 8px; border-radius: 4px;
+            font-size: 10px; cursor: pointer; opacity: 0;
         }
+        .code-container:hover .copy-btn { opacity: 1; }
 
-        .code-container:hover .copy-btn {
-            opacity: 1;
-        }
+        .ai code, .user code { background: rgba(0,0,0,0.1); padding: 2px 4px; border-radius: 4px; }
+        .ai pre, .user pre { background: rgba(0,0,0,0.1); padding: 10px; overflow-x: auto; border-radius: 8px; }
+        
+        .typing { font-style: italic; font-size: 12px; margin-bottom: 10px; display: none; }
 
-        .ai code, .user code {
-            background: rgba(0,0,0,0.1);
-            padding: 2px 4px;
-            border-radius: 4px;
-        }
-        
-        .ai pre, .user pre {
-            background: rgba(0,0,0,0.1);
-            padding: 10px;
-            overflow-x: auto;
-            border-radius: 8px;
-        }
-        
-        .typing {
-            font-style: italic;
-            font-size: 12px;
-            margin-bottom: 10px;
-            display: none;
-        }
-
-        .bottom {
-            display: flex;
-            gap: 10px;
-            padding-bottom: 10px;
-        }
-        
+        .bottom { display: flex; gap: 10px; padding-bottom: 10px; }
         textarea {
-            flex: 1;
-            padding: 12px;
-            border: 1px solid gray;
-            font-size: 16px;
-            font-family: inherit;
-            resize: none;
-            min-height: 45px;
-            max-height: 150px;
-            border-radius: 20px;
-            background: transparent;
-            color: inherit;
-            outline: none !important;
-            box-shadow: none !important;
+            flex: 1; padding: 12px; border: 1px solid gray;
+            font-size: 16px; font-family: inherit; resize: none;
+            min-height: 45px; max-height: 150px; border-radius: 20px;
+            background: transparent; color: inherit; outline: none !important;
         }
         
         button.send {
-            padding: 0 20px;
-            background: #007bff;
-            color: #fff;
-            border: none;
-            cursor: pointer;
-            border-radius: 20px;
-            font-weight: bold;
+            padding: 0 20px; background: #007bff; color: #fff;
+            border: none; cursor: pointer; border-radius: 20px; font-weight: bold;
         }
+        button.send:disabled { opacity: 0.5; cursor: not-allowed; }
         
-        button.send:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        footer {
-            text-align: center;
-            font-size: 10px;
-            color: gray;
-            margin-top: auto;
-            padding: 10px 0;
-        }
-
-        @media (max-width: 600px) {
-            body { padding: 5px; }
-            .chat { height: 60vh; }
-            h1 { font-size: 20px; }
-        }
+        footer { text-align: center; font-size: 10px; color: gray; margin-top: auto; padding: 10px 0; }
     </style>
 </head>
 <body class="light">
-    <div id="offlineBanner" class="offline-banner">You are currently offline. Some features may not work.</div>
+    <div id="offlineBanner" class="offline-banner">You are currently offline.</div>
 
     <header>
         <svg class="logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -283,33 +204,44 @@
 
     <div class="controls">
         <select class="theme-dropdown" id="themeSelect" onchange="setTheme(this.value)" aria-label="Select theme">
-            <option value="light">Light Theme</option>
-            <option value="dark">Dark Theme</option>
-            <option value="blue">Blue Theme</option>
-            <option value="green">Green Theme</option>
-            <option value="purple">Purple Theme</option>
+            <option value="light">Light</option>
+            <option value="gray">Gray</option>
+            <option value="black">Black</option>
+            <option value="obsidian">Obsidian</option>
+            <option value="deep-blue">Deep Blue</option>
+            <option value="blue">Blue</option>
+            <option value="light-blue">Light Blue</option>
+            <option value="deep-green">Deep Green</option>
+            <option value="green">Green</option>
+            <option value="light-green">Light Green</option>
+            <option value="dark-red">Dark Red</option>
+            <option value="red">Red</option>
+            <option value="light-red">Light Red</option>
+            <option value="deep-pink">Deep Pink</option>
+            <option value="pink">Pink</option>
+            <option value="light-pink">Light Pink</option>
+            <option value="deep-purple">Deep Purple</option>
+            <option value="purple">Purple</option>
+            <option value="light-purple">Light Purple</option>
         </select>
-        <button class="btn-action" onclick="exportChat()" title="Export to .txt">Export</button>
+        <button class="btn-action" onclick="exportChat()" title="Alt+E">Export</button>
         <button class="btn-action" onclick="clearChat()" style="border-color: #ff4444; color: #ff4444;">Clear</button>
     </div>
 
     <main>
-        <div class="chat" id="chat" role="log" aria-live="polite" aria-label="Chat history"></div>
+        <div class="chat" id="chat" role="log" aria-live="polite"></div>
         <div id="typing" class="typing">Jan Agent is thinking...</div>
-
         <div class="bottom">
-            <textarea id="input" placeholder="Type message..." aria-label="Message input" rows="1"></textarea>
-            <button class="send" id="btn" onclick="send()" aria-label="Send message">Send</button>
+            <textarea id="input" placeholder="Type message..." rows="1"></textarea>
+            <button class="send" id="btn" onclick="send()">Send</button>
         </div>
     </main>
 
-    <footer>© Jan 2026. All rights reserved. (Alt+C: Clear, Alt+F: Focus, Esc: Blur)</footer>
+    <footer>© Jan 2026. (Alt+C: Clear, Alt+E: Export, Alt+S: Theme)</footer>
 
     <script>
-        // Use a more robust API detection
         const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-            ? 'http://localhost:5000/chat' 
-            : 'https://jan-agent-backend-test.onrender.com/chat';
+            ? 'http://localhost:5000/chat' : 'https://jan-agent-backend-test.onrender.com/chat';
 
         const chat = document.getElementById('chat');
         const input = document.getElementById('input');
@@ -319,26 +251,45 @@
         const offlineBanner = document.getElementById('offlineBanner');
         
         let chatHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
+        let themeChangeCount = 0;
+        let themeTimer = null;
+        let isRainbow = false;
+
+        // Security Blur
+        window.addEventListener('blur', () => document.body.classList.add('blurred'));
+        window.addEventListener('focus', () => document.body.classList.remove('blurred'));
 
         // Offline Detection
         window.addEventListener('online', () => offlineBanner.style.display = 'none');
         window.addEventListener('offline', () => offlineBanner.style.display = 'block');
-        if (!navigator.onLine) offlineBanner.style.display = 'block';
 
         // Initialize theme
         const savedTheme = localStorage.getItem('theme') || 'light';
         document.body.className = savedTheme;
         themeSelect.value = savedTheme;
 
-        // Restore chat history
         window.onload = () => {
             chatHistory.forEach(msg => addMsg(msg.content, msg.role, true, msg.timestamp));
             input.focus();
         };
 
         function setTheme(themeName) {
+            if (isRainbow) return;
             document.body.className = themeName;
             localStorage.setItem('theme', themeName);
+            
+            // Easter Egg Logic
+            themeChangeCount++;
+            if (!themeTimer) {
+                themeTimer = setTimeout(() => {
+                    themeChangeCount = 0;
+                    themeTimer = null;
+                }, 60000);
+            }
+            if (themeChangeCount >= 21) {
+                isRainbow = true;
+                document.body.className = 'rainbow';
+            }
         }
 
         function clearChat() {
@@ -350,36 +301,33 @@
         }
 
         function exportChat() {
-            if (chatHistory.length === 0) return alert('No messages to export.');
+            if (chatHistory.length === 0) return;
             const text = chatHistory.map(m => `[${m.timestamp || 'N/A'}] ${m.role.toUpperCase()}: ${m.content}`).join('\n\n');
             const blob = new Blob([text], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `jan-chat-export-${new Date().toISOString().slice(0,10)}.txt`;
+            a.download = `jan-chat-export.txt`;
             a.click();
             URL.revokeObjectURL(url);
         }
 
         // Keyboard Shortcuts
         document.addEventListener('keydown', (e) => {
-            if (e.altKey && e.key.toLowerCase() === 'c') {
-                e.preventDefault();
-                clearChat();
-            }
-            if (e.altKey && e.key.toLowerCase() === 'f') {
-                e.preventDefault();
-                input.focus();
-            }
-            if (e.key === 'Escape') {
-                input.blur();
+            if (e.altKey) {
+                if (e.key.toLowerCase() === 'c') { e.preventDefault(); clearChat(); }
+                if (e.key.toLowerCase() === 'e') { e.preventDefault(); exportChat(); }
+                if (e.key.toLowerCase() === 's') {
+                    e.preventDefault();
+                    const options = Array.from(themeSelect.options);
+                    const nextIndex = (themeSelect.selectedIndex + 1) % options.length;
+                    themeSelect.selectedIndex = nextIndex;
+                    setTheme(options[nextIndex].value);
+                }
             }
         });
 
-        const isTouchDevice = () => {
-            return (('ontouchstart' in window) || (navigator.maxTouchPoints > 0));
-        };
-
+        const isTouchDevice = () => (('ontouchstart' in window) || (navigator.maxTouchPoints > 0));
         input.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !isTouchDevice() && !e.shiftKey) {
                 e.preventDefault();
@@ -394,12 +342,7 @@
 
         async function send() {
             const msg = input.value.trim();
-            if (!msg || btn.disabled) return;
-
-            if (!navigator.onLine) {
-                addMsg('You are offline. Please check your connection.', 'ai');
-                return;
-            }
+            if (!msg || btn.disabled || !navigator.onLine) return;
 
             const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             addMsg(msg, 'user', true, timestamp);
@@ -418,24 +361,16 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ messages: chatHistory.map(({role, content}) => ({role, content})) })
                 });
-
                 const data = await res.json();
                 typingIndicator.style.display = 'none';
-                
                 const aiTimestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                if (!res.ok) {
-                    const errorMsg = res.status === 429 ? 'Too many requests.' : 'Something went wrong.';
-                    addMsg(errorMsg, 'ai', false, aiTimestamp);
-                    return;
-                }
-                
-                const reply = data.response || data.error;
+                const reply = data.response || data.error || 'Error';
                 addMsg(reply, 'ai', true, aiTimestamp);
                 chatHistory.push({ role: 'assistant', content: reply, timestamp: aiTimestamp });
                 saveHistory();
             } catch (err) {
                 typingIndicator.style.display = 'none';
-                addMsg('Network error: ' + err.message, 'ai', false, new Date().toLocaleTimeString());
+                addMsg('Error: ' + err.message, 'ai', false, new Date().toLocaleTimeString());
             } finally {
                 btn.disabled = false;
                 input.focus();
@@ -445,10 +380,8 @@
         function addMsg(text, type, isMd = false, timestamp = '') {
             const container = document.createElement('div');
             container.className = 'msg-container';
-
             const div = document.createElement('div');
             div.className = 'msg ' + type;
-            
             if (isMd) {
                 div.innerHTML = marked.parse(text);
                 div.querySelectorAll('pre').forEach(pre => {
@@ -456,7 +389,6 @@
                     wrapper.className = 'code-container';
                     pre.parentNode.insertBefore(wrapper, pre);
                     wrapper.appendChild(pre);
-
                     const copyBtn = document.createElement('button');
                     copyBtn.className = 'copy-btn';
                     copyBtn.textContent = 'Copy';
@@ -467,19 +399,14 @@
                     };
                     wrapper.appendChild(copyBtn);
                 });
-            } else {
-                div.textContent = text;
-            }
-            
+            } else { div.textContent = text; }
             container.appendChild(div);
-
             if (timestamp) {
                 const ts = document.createElement('div');
                 ts.className = 'timestamp';
                 ts.textContent = timestamp;
                 container.appendChild(ts);
             }
-
             chat.appendChild(container);
             chat.scrollTop = chat.scrollHeight;
         }
