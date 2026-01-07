@@ -16,6 +16,7 @@
             --msg-user-bg: rgba(0, 123, 255, 0.1);
             --msg-ai-bg: rgba(128, 128, 128, 0.1);
             --border-color: #cccccc;
+            --input-bg: #ffffff;
         }
 
         * { 
@@ -26,29 +27,29 @@
         }
 
         body.blurred {
-            filter: blur(20px) grayscale(100%);
+            filter: blur(10px);
             pointer-events: none;
         }
 
-        body.light { --bg-color: #ffffff; --text-color: #000000; --chat-bg: #f9f9f9; }
-        body.gray { --bg-color: #808080; --text-color: #ffffff; --chat-bg: #707070; }
-        body.black { --bg-color: #1a1a1a; --text-color: #ffffff; --chat-bg: #111111; }
-        body.obsidian { --bg-color: #050505; --text-color: #e0e0e0; --chat-bg: #0a0a0a; }
-        body.deep-blue { --bg-color: #000033; --text-color: #e0e0ff; --chat-bg: #000022; }
-        body.blue { --bg-color: #0000ff; --text-color: #ffffff; --chat-bg: #0000cc; }
-        body.light-blue { --bg-color: #add8e6; --text-color: #000000; --chat-bg: #bde8f6; }
-        body.deep-green { --bg-color: #003300; --text-color: #e0ffe0; --chat-bg: #002200; }
-        body.green { --bg-color: #008000; --text-color: #ffffff; --chat-bg: #007000; }
-        body.light-green { --bg-color: #90ee90; --text-color: #000000; --chat-bg: #a0ffa0; }
-        body.dark-red { --bg-color: #8b0000; --text-color: #ffffff; --chat-bg: #7b0000; }
-        body.red { --bg-color: #ff0000; --text-color: #ffffff; --chat-bg: #ee0000; }
-        body.light-red { --bg-color: #ffcccb; --text-color: #000000; --chat-bg: #ffdcdc; }
-        body.deep-pink { --bg-color: #ff1493; --text-color: #ffffff; --chat-bg: #ee0483; }
-        body.pink { --bg-color: #ffc0cb; --text-color: #000000; --chat-bg: #ffd0db; }
-        body.light-pink { --bg-color: #fff0f5; --text-color: #000000; --chat-bg: #ffffff; }
-        body.deep-purple { --bg-color: #301934; --text-color: #e0d0e0; --chat-bg: #200924; }
-        body.purple { --bg-color: #800080; --text-color: #ffffff; --chat-bg: #700070; }
-        body.light-purple { --bg-color: #e6e6fa; --text-color: #000000; --chat-bg: #f6f6ff; }
+        body.light { --bg-color: #ffffff; --text-color: #000000; --chat-bg: #f9f9f9; --border-color: #cccccc; --input-bg: #ffffff; }
+        body.gray { --bg-color: #808080; --text-color: #ffffff; --chat-bg: #707070; --border-color: #999999; --input-bg: #909090; }
+        body.black { --bg-color: #1a1a1a; --text-color: #ffffff; --chat-bg: #111111; --border-color: #444444; --input-bg: #252525; }
+        body.obsidian { --bg-color: #050505; --text-color: #e0e0e0; --chat-bg: #0a0a0a; --border-color: #333333; --input-bg: #151515; }
+        body.deep-blue { --bg-color: #000033; --text-color: #e0e0ff; --chat-bg: #000022; --border-color: #000066; --input-bg: #000044; }
+        body.blue { --bg-color: #0000ff; --text-color: #ffffff; --chat-bg: #0000cc; --border-color: #3333ff; --input-bg: #1111ff; }
+        body.light-blue { --bg-color: #add8e6; --text-color: #000000; --chat-bg: #bde8f6; --border-color: #7dc8d6; --input-bg: #cde8f6; }
+        body.deep-green { --bg-color: #003300; --text-color: #e0ffe0; --chat-bg: #002200; --border-color: #006600; --input-bg: #004400; }
+        body.green { --bg-color: #008000; --text-color: #ffffff; --chat-bg: #007000; --border-color: #00aa00; --input-bg: #009000; }
+        body.light-green { --bg-color: #90ee90; --text-color: #000000; --chat-bg: #a0ffa0; --border-color: #70de70; --input-bg: #b0ffb0; }
+        body.dark-red { --bg-color: #8b0000; --text-color: #ffffff; --chat-bg: #7b0000; --border-color: #aa0000; --input-bg: #9b0000; }
+        body.red { --bg-color: #ff0000; --text-color: #ffffff; --chat-bg: #ee0000; --border-color: #ff3333; --input-bg: #ff1111; }
+        body.light-red { --bg-color: #ffcccb; --text-color: #000000; --chat-bg: #ffdcdc; --border-color: #ffaaaa; --input-bg: #ffeceb; }
+        body.deep-pink { --bg-color: #ff1493; --text-color: #ffffff; --chat-bg: #ee0483; --border-color: #ff44a3; --input-bg: #ff24a3; }
+        body.pink { --bg-color: #ffc0cb; --text-color: #000000; --chat-bg: #ffd0db; --border-color: #ffa0bb; --input-bg: #ffe0eb; }
+        body.light-pink { --bg-color: #fff0f5; --text-color: #000000; --chat-bg: #ffffff; --border-color: #ffd0e5; --input-bg: #fffafc; }
+        body.deep-purple { --bg-color: #301934; --text-color: #e0d0e0; --chat-bg: #200924; --border-color: #503954; --input-bg: #402944; }
+        body.purple { --bg-color: #800080; --text-color: #ffffff; --chat-bg: #700070; --border-color: #aa00aa; --input-bg: #900090; }
+        body.light-purple { --bg-color: #e6e6fa; --text-color: #000000; --chat-bg: #f6f6ff; --border-color: #d6d6ea; --input-bg: #f0f0ff; }
 
         @keyframes rainbow-bg {
             0% { background: #ff0000; } 14% { background: #ff7f00; } 28% { background: #ffff00; }
@@ -72,6 +73,7 @@
         
         header { text-align: center; margin-bottom: 15px; }
         .logo { width: 60px; height: 60px; margin: 0 auto 5px; }
+        .logo text { fill: var(--text-color); }
         h1 { font-size: 24px; }
         .version { font-size: 12px; color: gray; }
         
@@ -80,9 +82,19 @@
             margin-bottom: 15px; flex-wrap: wrap;
         }
 
+        .theme-section {
+            display: flex; gap: 8px; align-items: center;
+        }
+
         select, button.btn-action {
             padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-color);
-            background: transparent; color: inherit; cursor: pointer; font-size: 14px; outline: none;
+            background: var(--input-bg); color: var(--text-color); cursor: pointer; font-size: 14px; outline: none;
+        }
+
+        .keybind-hint {
+            font-size: 11px;
+            color: gray;
+            font-style: italic;
         }
 
         .offline-banner {
@@ -123,14 +135,14 @@
         pre { background: rgba(0,0,0,0.05); padding: 10px; overflow-x: auto; border-radius: 8px; }
         code { font-family: monospace; }
         
-        .typing { font-style: italic; font-size: 12px; margin-bottom: 10px; display: none; }
+        .typing { font-style: italic; font-size: 12px; margin-bottom: 10px; display: none; color: var(--text-color); }
 
         .bottom { display: flex; gap: 10px; padding-bottom: 10px; }
         textarea {
             flex: 1; padding: 12px; border: 1px solid var(--border-color);
             font-size: 16px; font-family: inherit; resize: none;
             min-height: 48px; max-height: 150px; border-radius: 24px;
-            background: transparent; color: inherit; outline: none;
+            background: var(--input-bg); color: var(--text-color); outline: none;
         }
         
         button.send {
@@ -147,27 +159,31 @@
 
     <header>
         <svg class="logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-            <text x="50" y="75" font-size="70" font-weight="bold" text-anchor="middle" fill="#555">J</text>
+            <text x="50" y="75" font-size="70" font-weight="bold" text-anchor="middle">J</text>
         </svg>
         <h1>Jan Agent</h1>
         <div class="version">v0.5.0-beta</div>
     </header>
 
     <div class="controls">
-        <select id="themeSelect" onchange="setTheme(this.value)" title="Use Ctrl+S to cycle themes">
-            <option value="light">Light</option><option value="gray">Gray</option>
-            <option value="black">Black</option><option value="obsidian">Obsidian</option>
-            <option value="deep-blue">Deep Blue</option><option value="blue">Blue</option>
-            <option value="light-blue">Light Blue</option><option value="deep-green">Deep Green</option>
-            <option value="green">Green</option><option value="light-green">Light Green</option>
-            <option value="dark-red">Dark Red</option><option value="red">Red</option>
-            <option value="light-red">Light Red</option><option value="deep-pink">Deep Pink</option>
-            <option value="pink">Pink</option><option value="light-pink">Light Pink</option>
-            <option value="deep-purple">Deep Purple</option><option value="purple">Purple</option>
-            <option value="light-purple">Light Purple</option>
-        </select>
-        <button class="btn-action" onclick="exportChat()">Export</button>
-        <button class="btn-action" onclick="clearChat()" style="color: #ff4444; border-color: #ff4444;">Clear</button>
+        <div class="theme-section">
+            <span style="font-size: 14px; color: var(--text-color);">Theme:</span>
+            <select id="themeSelect" onchange="setTheme(this.value)">
+                <option value="light">Light</option><option value="gray">Gray</option>
+                <option value="black">Black</option><option value="obsidian">Obsidian</option>
+                <option value="deep-blue">Deep Blue</option><option value="blue">Blue</option>
+                <option value="light-blue">Light Blue</option><option value="deep-green">Deep Green</option>
+                <option value="green">Green</option><option value="light-green">Light Green</option>
+                <option value="dark-red">Dark Red</option><option value="red">Red</option>
+                <option value="light-red">Light Red</option><option value="deep-pink">Deep Pink</option>
+                <option value="pink">Pink</option><option value="light-pink">Light Pink</option>
+                <option value="deep-purple">Deep Purple</option><option value="purple">Purple</option>
+                <option value="light-purple">Light Purple</option>
+            </select>
+            <span class="keybind-hint" id="themeKeybind" style="display: none;">(Ctrl+S)</span>
+        </div>
+        <button class="btn-action" onclick="exportChat()">Export <span class="keybind-hint" id="exportKeybind" style="display: none;">(Ctrl+E)</span></button>
+        <button class="btn-action" onclick="clearChat()" style="color: #ff4444; border-color: #ff4444;">Clear <span class="keybind-hint" id="clearKeybind" style="display: none;">(Ctrl+D)</span></button>
     </div>
 
     <main>
@@ -198,8 +214,22 @@
         let isRainbow = false;
         let isSending = false;
 
-        window.onblur = () => document.body.classList.add('blurred');
-        window.onfocus = () => document.body.classList.remove('blurred');
+        // Detect desktop mode
+        const isDesktop = !('ontouchstart' in window) && window.innerWidth > 768;
+        if (isDesktop) {
+            document.getElementById('themeKeybind').style.display = 'inline';
+            document.getElementById('exportKeybind').style.display = 'inline';
+            document.getElementById('clearKeybind').style.display = 'inline';
+        }
+
+        window.onblur = () => {
+            document.body.style.transition = 'filter 0.3s ease';
+            document.body.classList.add('blurred');
+        };
+        window.onfocus = () => {
+            document.body.style.transition = 'filter 0.3s ease';
+            document.body.classList.remove('blurred');
+        };
 
         window.ononline = () => offlineBanner.style.display = 'none';
         window.onoffline = () => offlineBanner.style.display = 'block';
@@ -236,7 +266,10 @@
 
         function exportChat() {
             if (chatHistory.length === 0) { alert('No messages to export'); return; }
-            const text = chatHistory.map(m => `[${m.timestamp || 'N/A'}] ${m.role.toUpperCase()}: ${m.content}`).join('\n\n');
+            const text = chatHistory.map(m => {
+                const role = m.role === 'assistant' ? 'JAN AGENT' : m.role.toUpperCase();
+                return `[${m.timestamp || 'N/A'}] ${role}: ${m.content}`;
+            }).join('\n\n');
             const blob = new Blob([text], { type: 'text/plain' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
@@ -245,17 +278,26 @@
         }
 
         document.onkeydown = (e) => {
-            if (e.ctrlKey && e.key.toLowerCase() === 's') {
-                e.preventDefault();
-                const nextIdx = (themeSelect.selectedIndex + 1) % themeSelect.options.length;
-                themeSelect.selectedIndex = nextIdx;
-                setTheme(themeSelect.options[nextIdx].value);
+            if (e.ctrlKey) {
+                if (e.key.toLowerCase() === 's') {
+                    e.preventDefault();
+                    const nextIdx = (themeSelect.selectedIndex + 1) % themeSelect.options.length;
+                    themeSelect.selectedIndex = nextIdx;
+                    setTheme(themeSelect.options[nextIdx].value);
+                }
+                if (e.key.toLowerCase() === 'e') {
+                    e.preventDefault();
+                    exportChat();
+                }
+                if (e.key.toLowerCase() === 'd') {
+                    e.preventDefault();
+                    clearChat();
+                }
             }
         };
 
-        const isTouch = () => (('ontouchstart' in window) || (navigator.maxTouchPoints > 0));
         input.onkeydown = (e) => {
-            if (e.key === 'Enter' && !isTouch() && !e.shiftKey) {
+            if (e.key === 'Enter' && isDesktop && !e.shiftKey) {
                 e.preventDefault();
                 send();
             }
@@ -271,21 +313,29 @@
             if (!msg || isSending || !navigator.onLine) return;
 
             isSending = true;
-            const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const now = new Date();
+            const timestamp = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const isoTimestamp = now.toISOString();
+            
             addMsg(msg, 'user', false, timestamp);
-            chatHistory.push({ role: 'user', content: msg, timestamp });
-            localStorage.setItem('chatHistory', JSON.stringify(chatHistory.slice(-50)));
+            chatHistory.push({ role: 'user', content: msg, timestamp, isoTimestamp });
             
             input.value = '';
             input.style.height = 'auto';
             btn.disabled = true;
             typingIndicator.style.display = 'block';
 
+            // Add timestamp context to messages
+            const messagesWithTime = chatHistory.map(m => ({
+                role: m.role,
+                content: m.role === 'user' ? `[Sent at ${m.isoTimestamp}] ${m.content}` : m.content
+            }));
+
             try {
                 const res = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ messages: chatHistory.map(({role, content}) => ({role, content})) }),
+                    body: JSON.stringify({ messages: messagesWithTime }),
                     signal: AbortSignal.timeout(30000)
                 });
                 
@@ -295,15 +345,17 @@
                 
                 const data = await res.json();
                 typingIndicator.style.display = 'none';
-                const aiTs = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const aiNow = new Date();
+                const aiTs = aiNow.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                const aiIsoTs = aiNow.toISOString();
                 const reply = data.response || data.error || 'Error';
                 addMsg(reply, 'ai', true, aiTs);
-                chatHistory.push({ role: 'assistant', content: reply, timestamp: aiTs });
+                chatHistory.push({ role: 'assistant', content: reply, timestamp: aiTs, isoTimestamp: aiIsoTs });
                 localStorage.setItem('chatHistory', JSON.stringify(chatHistory.slice(-50)));
             } catch (err) {
                 typingIndicator.style.display = 'none';
                 const errMsg = err.name === 'AbortError' ? 'Request timed out' : err.message;
-                addMsg('Error: ' + errMsg, 'ai', false, new Date().toLocaleTimeString());
+                addMsg('Error: ' + errMsg, 'ai', false, new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
             } finally {
                 btn.disabled = false;
                 isSending = false;
