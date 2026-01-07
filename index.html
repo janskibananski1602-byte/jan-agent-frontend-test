@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Content Security Policy -->
+    <!-- Content Security Policy - Relaxed for inline styles and specific domains -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self' https://jan-agent-backend-test.onrender.com http://localhost:5000; img-src 'self' data:; font-src 'self';">
     <title>Jan Agent</title>
     <!-- Subresource Integrity (SRI) -->
@@ -13,13 +13,21 @@
             --transition-speed: 0.4s;
         }
 
+        /* Global Transition - Applied carefully to avoid breaking layout */
         *, *::before, *::after { 
             margin: 0; 
             padding: 0; 
             box-sizing: border-box; 
-            transition: background-color var(--transition-speed) ease-in-out, color var(--transition-speed) ease-in-out, border-color var(--transition-speed) ease-in-out, box-shadow var(--transition-speed) ease-in-out !important;
         }
         
+        /* Theme transitions applied to specific properties */
+        body, .chat, textarea, select, button, .msg, .timestamp {
+            transition: background-color var(--transition-speed) ease-in-out, 
+                        color var(--transition-speed) ease-in-out, 
+                        border-color var(--transition-speed) ease-in-out, 
+                        box-shadow var(--transition-speed) ease-in-out;
+        }
+
         body.light { background: #fff; color: #000; }
         body.dark { background: #000; color: #fff; }
         body.blue { background: #1a2332; color: #e0e6ed; }
@@ -229,6 +237,7 @@
             background: transparent;
             color: inherit;
             outline: none !important;
+            box-shadow: none !important;
         }
         
         button.send {
@@ -297,7 +306,8 @@
     <footer>© Jan 2026. All rights reserved. (Alt+C: Clear, Alt+F: Focus, Esc: Blur)</footer>
 
     <script>
-        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+        // Use a more robust API detection
+        const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
             ? 'http://localhost:5000/chat' 
             : 'https://jan-agent-backend-test.onrender.com/chat';
 
@@ -441,7 +451,6 @@
             
             if (isMd) {
                 div.innerHTML = marked.parse(text);
-                // Add copy buttons to code blocks
                 div.querySelectorAll('pre').forEach(pre => {
                     const wrapper = document.createElement('div');
                     wrapper.className = 'code-container';
