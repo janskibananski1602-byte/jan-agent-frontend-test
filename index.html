@@ -64,7 +64,7 @@
             text-align: center;
             margin-bottom: 15px;
             display: flex;
-            gap: 15px;
+            gap: 10px;
             justify-content: center;
             align-items: center;
             flex-wrap: wrap;
@@ -85,14 +85,23 @@
             background: transparent;
         }
 
-        .clear-btn {
+        .btn {
             background: transparent;
-            border: 1px solid #ff4444;
-            color: #ff4444;
+            border: 1px solid gray;
+            color: inherit;
             padding: 5px 10px;
             border-radius: 5px;
             cursor: pointer;
             font-size: 14px;
+        }
+
+        .btn:hover {
+            background: rgba(0,0,0,0.1);
+        }
+
+        .clear-btn {
+            border-color: #ff4444;
+            color: #ff4444;
         }
 
         .clear-btn:hover {
@@ -126,6 +135,7 @@
             border-radius: 12px;
             max-width: 85%;
             line-height: 1.5;
+            position: relative;
         }
 
         .user {
@@ -144,18 +154,45 @@
             color: var(--ai-msg-text);
         }
 
-        .ai code, .user code {
+        /* Code Block Styling */
+        .code-container {
+            position: relative;
+            margin: 10px 0;
+        }
+
+        pre {
+            background: rgba(0,0,0,0.1);
+            padding: 15px;
+            overflow-x: auto;
+            border-radius: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+        }
+
+        code {
             background: rgba(0,0,0,0.1);
             padding: 2px 4px;
             border-radius: 4px;
         }
 
-        .ai pre, .user pre {
-            background: rgba(0,0,0,0.1);
-            padding: 10px;
-            overflow-x: auto;
-            border-radius: 8px;
-            margin: 10px 0;
+        .copy-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(0,0,0,0.1);
+            color: inherit;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+
+        .copy-btn:hover {
+            opacity: 1;
+            background: rgba(255,255,255,0.4);
         }
 
         .typing {
@@ -214,6 +251,41 @@
             cursor: not-allowed;
         }
 
+        /* Modal for History */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 10px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            padding: 10px;
+            border-bottom: 1px solid gray;
+            cursor: pointer;
+        }
+
+        .history-item:hover {
+            background: rgba(0,0,0,0.05);
+        }
+
         footer {
             text-align: center;
             font-size: 10px;
@@ -247,7 +319,9 @@
             <label for="textColor">Text:</label>
             <input type="color" id="textColor" value="#000000" onchange="updateColors()">
         </div>
-        <button class="clear-btn" onclick="clearChat()">Remove it</button>
+        <button class="btn" onclick="newChat()">New Chat</button>
+        <button class="btn" onclick="showHistory()">Chat History</button>
+        <button class="btn clear-btn" onclick="clearChat()">Remove it</button>
     </div>
 
     <main>
@@ -262,6 +336,16 @@
         </div>
     </main>
 
+    <div id="historyModal" class="modal">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3>Chat History</h3>
+                <button class="btn" onclick="closeHistory()">Close</button>
+            </div>
+            <div id="historyList"></div>
+        </div>
+    </div>
+
     <footer>© Jan 2026. All rights reserved.</footer>
 
     <script>
@@ -275,8 +359,15 @@
         const typingIndicator = document.getElementById('typing');
         const bgColorInput = document.getElementById('bgColor');
         const textColorInput = document.getElementById('textColor');
+        const historyModal = document.getElementById('historyModal');
+        const historyList = document.getElementById('historyList');
 
-        let chatHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
+        let currentChatId = localStorage.getItem('currentChatId') || Date.now().toString();
+        let allChats = JSON.parse(localStorage.getItem('allChats')) || {};
+        
+        if (!allChats[currentChatId]) {
+            allChats[currentChatId] = [];
+        }
 
         // Initialize colors
         const savedBgColor = localStorage.getItem('bgColor') || '#ffffff';
@@ -285,25 +376,21 @@
         textColorInput.value = savedTextColor;
         updateColors(false);
 
-        // Restore chat history
+        // Restore current chat
         window.onload = () => {
-            chatHistory.forEach(msg => addMsg(msg.content, msg.role, true));
+            loadChat(currentChatId);
             input.focus();
         };
 
         function updateColors(save = true) {
             const bg = bgColorInput.value;
             const text = textColorInput.value;
-            
             document.documentElement.style.setProperty('--bg-color', bg);
             document.documentElement.style.setProperty('--text-color', text);
-            
-            // Adjust chat background and message colors based on brightness
             const isDark = isColorDark(bg);
             document.documentElement.style.setProperty('--chat-bg', isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)');
             document.documentElement.style.setProperty('--ai-msg-bg', isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)');
             document.documentElement.style.setProperty('--ai-msg-text', text);
-            
             if (save) {
                 localStorage.setItem('bgColor', bg);
                 localStorage.setItem('textColor', text);
@@ -319,31 +406,57 @@
             return brightness < 128;
         }
 
+        function newChat() {
+            currentChatId = Date.now().toString();
+            allChats[currentChatId] = [];
+            saveAllChats();
+            localStorage.setItem('currentChatId', currentChatId);
+            chat.innerHTML = '';
+            input.focus();
+        }
+
         function clearChat() {
-            if (confirm('Remove all messages?')) {
-                chatHistory = [];
-                localStorage.removeItem('chatHistory');
+            if (confirm('Remove all messages in this chat?')) {
+                allChats[currentChatId] = [];
+                saveAllChats();
                 chat.innerHTML = '';
             }
         }
 
-        // Device detection for input behavior
-        const isTouchDevice = () => {
-            return (('ontouchstart' in window) ||
-                (navigator.maxTouchPoints > 0) ||
-                (navigator.msMaxTouchPoints > 0));
-        };
+        function showHistory() {
+            historyList.innerHTML = '';
+            const sortedIds = Object.keys(allChats).sort((a, b) => b - a);
+            sortedIds.forEach(id => {
+                const messages = allChats[id];
+                if (messages.length === 0) return;
+                const firstMsg = messages[0].content.substring(0, 30) + '...';
+                const item = document.createElement('div');
+                item.className = 'history-item';
+                item.textContent = firstMsg;
+                item.onclick = () => {
+                    loadChat(id);
+                    closeHistory();
+                };
+                historyList.appendChild(item);
+            });
+            historyModal.style.display = 'block';
+        }
 
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                if (!isTouchDevice()) {
-                    if (!e.shiftKey) {
-                        e.preventDefault();
-                        send();
-                    }
-                }
-            }
-        });
+        function closeHistory() {
+            historyModal.style.display = 'none';
+        }
+
+        function loadChat(id) {
+            currentChatId = id;
+            localStorage.setItem('currentChatId', id);
+            chat.innerHTML = '';
+            allChats[id].forEach(msg => addMsg(msg.content, msg.role, true));
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function saveAllChats() {
+            localStorage.setItem('allChats', JSON.stringify(allChats));
+        }
 
         // Auto-resize textarea
         input.addEventListener('input', function() {
@@ -355,17 +468,9 @@
             const msg = input.value.trim();
             if (!msg || btn.disabled) return;
 
-            const lastMsgTime = parseInt(localStorage.getItem('lastMsgTime') || '0');
-            const now = Date.now();
-            if (now - lastMsgTime < 1000) {
-                addMsg('Please wait a second before sending another message.', 'ai');
-                return;
-            }
-            localStorage.setItem('lastMsgTime', now.toString());
-
             addMsg(msg, 'user', true);
-            chatHistory.push({ role: 'user', content: msg });
-            saveHistory();
+            allChats[currentChatId].push({ role: 'user', content: msg });
+            saveAllChats();
 
             input.value = '';
             input.style.height = 'auto';
@@ -377,24 +482,21 @@
                 const res = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ messages: chatHistory })
+                    body: JSON.stringify({ messages: allChats[currentChatId] })
                 });
 
                 const data = await res.json();
                 typingIndicator.style.display = 'none';
 
                 if (!res.ok) {
-                    const errorMsg = res.status === 429 ? 'Too many requests. Wait a moment.' : 
-                                   res.status >= 500 ? 'Server error. Try again later.' : 
-                                   ('Error: ' + (data.error || 'Something went wrong'));
-                    addMsg(errorMsg, 'ai');
+                    addMsg('Error: ' + (data.error || 'Something went wrong'), 'ai');
                     return;
                 }
 
                 const reply = data.response || data.error;
                 addMsg(reply, 'ai', true);
-                chatHistory.push({ role: 'assistant', content: reply });
-                saveHistory();
+                allChats[currentChatId].push({ role: 'assistant', content: reply });
+                saveAllChats();
             } catch (err) {
                 typingIndicator.style.display = 'none';
                 addMsg('Network error: ' + err.message, 'ai');
@@ -409,20 +511,35 @@
             div.className = 'msg ' + type;
 
             if (isMd) {
-                div.innerHTML = marked.parse(text);
+                // Custom renderer for code blocks with copy button
+                const rawHtml = marked.parse(text);
+                div.innerHTML = rawHtml;
+                
+                // Find all pre tags and wrap them
+                const preTags = div.querySelectorAll('pre');
+                preTags.forEach(pre => {
+                    const container = document.createElement('div');
+                    container.className = 'code-container';
+                    pre.parentNode.insertBefore(container, pre);
+                    container.appendChild(pre);
+                    
+                    const copyBtn = document.createElement('button');
+                    copyBtn.className = 'copy-btn';
+                    copyBtn.textContent = 'Copy';
+                    copyBtn.onclick = () => {
+                        navigator.clipboard.writeText(pre.textContent).then(() => {
+                            copyBtn.textContent = 'Copied!';
+                            setTimeout(() => copyBtn.textContent = 'Copy', 2000);
+                        });
+                    };
+                    container.appendChild(copyBtn);
+                });
             } else {
                 div.textContent = text;
             }
 
             chat.appendChild(div);
             chat.scrollTop = chat.scrollHeight;
-        }
-
-        function saveHistory() {
-            if (chatHistory.length > 50) {
-                chatHistory = chatHistory.slice(-50);
-            }
-            localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
         }
     </script>
 </body>
