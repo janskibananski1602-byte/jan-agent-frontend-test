@@ -44,6 +44,33 @@
 
         .settings-icon { position: absolute; top: 0; right: 0; cursor: pointer; padding: 10px; }
 
+        .model-selector {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .model-btn {
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: 1px solid gray;
+            background: transparent;
+            color: inherit;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .model-btn.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        .model-info {
+            font-size: 11px;
+            color: gray;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
         .btn {
             background: transparent; border: 1px solid gray; color: inherit;
             padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 16px;
@@ -77,8 +104,6 @@
         .settings-section h4 { font-size: 20px; margin-bottom: 15px; }
         .color-control { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; font-size: 18px; }
         .color-control input[type="color"] { width: 40px; height: 40px; border: none; cursor: pointer; background: transparent; }
-        
-        #userKnowledge { font-size: 16px; white-space: pre-wrap; background: rgba(0,0,0,0.05); padding: 15px; border-radius: 10px; min-height: 50px; }
 
         .clear-messages-container { text-align: center; margin: 10px 0; }
         .clear-btn { color: #ff4444; border-color: #ff4444; font-size: 14px; padding: 8px 15px; }
@@ -100,11 +125,17 @@
         <h1>Jan Agent</h1>
         <div class="version">v0.5.0-beta</div>
         <div class="settings-icon" onclick="openSettings()">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
         </div>
     </header>
 
     <main>
+        <div class="model-selector">
+            <button id="fastBtn" class="model-btn active" onclick="switchModel('fast')">Fast 1.0</button>
+            <button id="proBtn" class="model-btn" onclick="switchModel('pro')">Pro 1.0</button>
+        </div>
+        <div id="modelInfo" class="model-info">Fast 1.0: Tested, free, unlimited</div>
+
         <div id="chatScreen">
             <div class="chat" id="chat"></div>
             <div id="typing" style="display:none; font-style:italic; font-size:12px; margin-bottom:10px;">Jan Agent is thinking...</div>
@@ -126,7 +157,7 @@
                 <h3 style="font-size:24px;">Settings</h3>
                 <button class="btn" onclick="closeSettings()">Close</button>
             </div>
-            
+
             <div class="settings-section">
                 <h4>Appearance</h4>
                 <div class="color-control"><label>Background:</label><input type="color" id="bgColor" oninput="updateColors()"></div>
@@ -134,10 +165,9 @@
             </div>
 
             <div class="settings-section">
-                <h4>User Knowledge</h4>
-                <p style="font-size:14px; color:gray; margin-bottom:10px;">What Jan Agent has learned about you:</p>
-                <div id="userKnowledge">No knowledge yet.</div>
-                <button class="btn" onclick="clearKnowledge()" style="margin-top:15px; font-size:12px; padding:5px 10px;">Clear Knowledge</button>
+                <h4>Privacy</h4>
+                <p style="font-size:14px; color:gray; margin-bottom:10px;">Clear all information Jan Agent has learned about you.</p>
+                <button class="btn" onclick="clearKnowledge()" style="font-size:12px; padding:5px 10px;">Clear Knowledge</button>
             </div>
         </div>
     </div>
@@ -156,16 +186,34 @@
         const input = document.getElementById('input');
         const sendBtn = document.getElementById('sendBtn');
         const typing = document.getElementById('typing');
-        const knowledgeDisplay = document.getElementById('userKnowledge');
-        
+        const modelInfo = document.getElementById('modelInfo');
+
         let chatHistory = JSON.parse(localStorage.getItem('jan_chat_history')) || [];
         let knowledge = JSON.parse(localStorage.getItem('jan_knowledge')) || "";
+        let currentModel = 'fast';
+        let proMessageCount = parseInt(localStorage.getItem('jan_pro_count')) || 0;
 
         window.onload = () => { 
             loadColors(); 
-            updateKnowledgeDisplay();
             renderHistory();
+            updateModelUI();
         };
+
+        function switchModel(model) {
+            currentModel = model;
+            updateModelUI();
+        }
+
+        function updateModelUI() {
+            document.getElementById('fastBtn').classList.toggle('active', currentModel === 'fast');
+            document.getElementById('proBtn').classList.toggle('active', currentModel === 'pro');
+            
+            if (currentModel === 'fast') {
+                modelInfo.textContent = "Fast 1.0: Tested, free, unlimited";
+            } else {
+                modelInfo.textContent = `Pro 1.0: Experimental, free, limited: ${5 - proMessageCount} messages left`;
+            }
+        }
 
         function openSettings() { document.getElementById('settingsModal').style.display = 'block'; }
         function closeSettings() { document.getElementById('settingsModal').style.display = 'none'; }
@@ -208,19 +256,13 @@
             if (!knowledge.includes(info)) {
                 knowledge += (knowledge ? "\n" : "") + info;
                 localStorage.setItem('jan_knowledge', JSON.stringify(knowledge));
-                updateKnowledgeDisplay();
             }
-        }
-
-        function updateKnowledgeDisplay() {
-            knowledgeDisplay.textContent = knowledge || "No knowledge yet.";
         }
 
         function clearKnowledge() {
             if (confirm('Clear all learned knowledge?')) {
                 knowledge = "";
                 localStorage.removeItem('jan_knowledge');
-                updateKnowledgeDisplay();
             }
         }
 
@@ -233,11 +275,16 @@
         async function send() {
             const msg = input.value.trim();
             if (!msg || sendBtn.disabled) return;
-            
+
+            if (currentModel === 'pro' && proMessageCount >= 5) {
+                addMsg("You have reached the limit of 5 messages for Jan Agent Pro 1.0. Please switch to Fast 1.0.", 'ai');
+                return;
+            }
+
             addMsg(msg, 'user');
             chatHistory.push({ role: 'user', content: msg });
             localStorage.setItem('jan_chat_history', JSON.stringify(chatHistory));
-            
+
             input.value = ''; sendBtn.disabled = true; typing.style.display = 'block';
             chat.scrollTop = chat.scrollHeight;
 
@@ -246,15 +293,22 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
+                        model_type: currentModel,
                         messages: [
-                            { role: 'system', content: `You are Jan Agent. User Knowledge: ${knowledge}. If you learn something new and important about the user, start your response with [KNOWLEDGE: info] where info is the new fact.` },
+                            { role: 'system', content: `User Knowledge: ${knowledge}. If you learn something new and important about the user, start your response with [KNOWLEDGE: info] where info is the new fact.` },
                             ...chatHistory 
                         ] 
                     })
                 });
                 const data = await res.json();
                 let reply = data.response || data.error;
-                
+
+                if (currentModel === 'pro' && !data.error) {
+                    proMessageCount++;
+                    localStorage.setItem('jan_pro_count', proMessageCount);
+                    updateModelUI();
+                }
+
                 // AI-driven knowledge detection
                 if (reply.startsWith('[KNOWLEDGE:')) {
                     const parts = reply.split(']');
