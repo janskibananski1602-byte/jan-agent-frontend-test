@@ -76,8 +76,6 @@
         .settings-section { margin-bottom: 20px; padding-bottom: 15px; }
         .color-control { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
         
-        .forgot-pass { font-size: 10px; color: gray; text-align: center; margin-top: 10px; }
-
         .clear-messages-container { text-align: center; margin: 10px 0; }
         .clear-btn { color: #ff4444; border-color: #ff4444; }
 
@@ -130,8 +128,6 @@
                 <div class="color-control"><label>Background:</label><input type="color" id="bgColor" onchange="updateColors()"></div>
                 <div class="color-control"><label>Text Color:</label><input type="color" id="textColor" onchange="updateColors()"></div>
             </div>
-
-            <div class="forgot-pass">Forgot password? DM jandev_official on Discord</div>
         </div>
     </div>
 
@@ -140,7 +136,12 @@
     <footer>© Jan 2026. All rights reserved.</footer>
 
     <script>
-        const API_URL = 'https://jan-agent-backend-test.onrender.com/chat';
+        // Obfuscated API URL to prevent direct exposure
+        const _0x4a2b = ['chat', 'onrender', 'test', 'backend', 'agent', 'jan', 'https://', '.', '-'];
+        const getApiUrl = () => {
+            return _0x4a2b[6] + _0x4a2b[5] + _0x4a2b[8] + _0x4a2b[4] + _0x4a2b[8] + _0x4a2b[3] + _0x4a2b[8] + _0x4a2b[2] + _0x4a2b[7] + _0x4a2b[1] + _0x4a2b[7] + _0x4a2b[4] + '/' + _0x4a2b[0];
+        };
+
         const chat = document.getElementById('chat');
         const input = document.getElementById('input');
         const sendBtn = document.getElementById('sendBtn');
@@ -189,7 +190,7 @@
             chat.scrollTop = chat.scrollHeight;
 
             try {
-                const res = await fetch(API_URL, {
+                const res = await fetch(getApiUrl(), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ messages: [{ role: 'system', content: "You are Jan Agent." }, ...chatHistory] })
