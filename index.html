@@ -203,7 +203,7 @@
             if (currentModel === 'fast') {
                 modelInfo.textContent = "Fast 1.0: Tested, free, unlimited";
             } else {
-                const remaining = Math.max(0, 5 - proMessageCount);
+                const remaining = Math.max(0, 20 - proMessageCount);
                 modelInfo.textContent = `Pro 1.0: Experimental, free, limited: ${remaining} messages left`;
             }
         }
@@ -266,8 +266,8 @@
             const msg = input.value.trim();
             if (!msg || sendBtn.disabled) return;
 
-            if (currentModel === 'pro' && proMessageCount >= 5) {
-                addMsg("You have reached the limit of 5 messages for Jan Agent Pro 1.0. Please switch to Fast 1.0.", 'ai');
+            if (currentModel === 'pro' && proMessageCount >= 20) {
+                addMsg("You have reached the limit of 20 messages for Jan Agent Pro 1.0. Please switch to Fast 1.0.", 'ai');
                 return;
             }
 
