@@ -46,7 +46,7 @@
 
         .btn {
             background: transparent; border: 1px solid gray; color: inherit;
-            padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 14px;
+            padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 16px;
         }
         .btn:hover { background: rgba(0,0,0,0.1); }
 
@@ -71,13 +71,17 @@
 
         /* Modal */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
-        .modal-content { background: var(--bg-color); color: var(--text-color); margin: 10% auto; padding: 20px; border: 1px solid #888; width: 90%; max-width: 400px; border-radius: 10px; }
+        .modal-content { background: var(--bg-color); color: var(--text-color); margin: 5% auto; padding: 30px; border: 1px solid #888; width: 90%; max-width: 500px; border-radius: 15px; max-height: 85vh; overflow-y: auto; }
 
-        .settings-section { margin-bottom: 20px; padding-bottom: 15px; }
-        .color-control { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .settings-section { margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid rgba(128,128,128,0.2); }
+        .settings-section h4 { font-size: 20px; margin-bottom: 15px; }
+        .color-control { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; font-size: 18px; }
+        .color-control input[type="color"] { width: 40px; height: 40px; border: none; cursor: pointer; background: transparent; }
         
+        #userKnowledge { font-size: 16px; white-space: pre-wrap; background: rgba(0,0,0,0.05); padding: 15px; border-radius: 10px; min-height: 50px; }
+
         .clear-messages-container { text-align: center; margin: 10px 0; }
-        .clear-btn { color: #ff4444; border-color: #ff4444; }
+        .clear-btn { color: #ff4444; border-color: #ff4444; font-size: 14px; padding: 8px 15px; }
 
         footer { text-align: center; font-size: 10px; color: gray; padding: 10px 0; }
 
@@ -96,7 +100,7 @@
         <h1>Jan Agent</h1>
         <div class="version">v0.5.0-beta</div>
         <div class="settings-icon" onclick="openSettings()">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
         </div>
     </header>
 
@@ -118,8 +122,8 @@
 
     <div id="settingsModal" class="modal">
         <div class="modal-content">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h3>Settings</h3>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
+                <h3 style="font-size:24px;">Settings</h3>
                 <button class="btn" onclick="closeSettings()">Close</button>
             </div>
             
@@ -127,6 +131,13 @@
                 <h4>Appearance</h4>
                 <div class="color-control"><label>Background:</label><input type="color" id="bgColor" onchange="updateColors()"></div>
                 <div class="color-control"><label>Text Color:</label><input type="color" id="textColor" onchange="updateColors()"></div>
+            </div>
+
+            <div class="settings-section">
+                <h4>User Knowledge</h4>
+                <p style="font-size:14px; color:gray; margin-bottom:10px;">What Jan Agent has learned about you:</p>
+                <div id="userKnowledge">No knowledge yet.</div>
+                <button class="btn" onclick="clearKnowledge()" style="margin-top:15px; font-size:12px; padding:5px 10px;">Clear Knowledge</button>
             </div>
         </div>
     </div>
@@ -136,7 +147,6 @@
     <footer>© Jan 2026. All rights reserved.</footer>
 
     <script>
-        // Obfuscated API URL to prevent direct exposure
         const _0x4a2b = ['chat', 'onrender', 'test', 'backend', 'agent', 'jan', 'https://', '.', '-', 'com'];
         const getApiUrl = () => {
             return _0x4a2b[6] + _0x4a2b[5] + _0x4a2b[8] + _0x4a2b[4] + _0x4a2b[8] + _0x4a2b[3] + _0x4a2b[8] + _0x4a2b[2] + _0x4a2b[7] + _0x4a2b[1] + _0x4a2b[7] + _0x4a2b[9] + '/' + _0x4a2b[0];
@@ -146,9 +156,15 @@
         const input = document.getElementById('input');
         const sendBtn = document.getElementById('sendBtn');
         const typing = document.getElementById('typing');
+        const knowledgeDisplay = document.getElementById('userKnowledge');
+        
         let chatHistory = [];
+        let knowledge = JSON.parse(localStorage.getItem('jan_knowledge')) || "";
 
-        window.onload = () => { loadColors(); };
+        window.onload = () => { 
+            loadColors(); 
+            updateKnowledgeDisplay();
+        };
 
         function openSettings() { document.getElementById('settingsModal').style.display = 'block'; }
         function closeSettings() { document.getElementById('settingsModal').style.display = 'none'; }
@@ -181,6 +197,26 @@
 
         function clearChat() { if (confirm('Clear all messages?')) { chat.innerHTML = ''; chatHistory = []; } }
 
+        function updateKnowledge(info) {
+            if (!knowledge.includes(info)) {
+                knowledge += (knowledge ? "\n" : "") + info;
+                localStorage.setItem('jan_knowledge', JSON.stringify(knowledge));
+                updateKnowledgeDisplay();
+            }
+        }
+
+        function updateKnowledgeDisplay() {
+            knowledgeDisplay.textContent = knowledge || "No knowledge yet.";
+        }
+
+        function clearKnowledge() {
+            if (confirm('Clear all learned knowledge?')) {
+                knowledge = "";
+                localStorage.removeItem('jan_knowledge');
+                updateKnowledgeDisplay();
+            }
+        }
+
         async function send() {
             const msg = input.value.trim();
             if (!msg || sendBtn.disabled) return;
@@ -189,11 +225,24 @@
             input.value = ''; sendBtn.disabled = true; typing.style.display = 'block';
             chat.scrollTop = chat.scrollHeight;
 
+            // Simple memory extraction
+            const nameMatch = msg.match(/my name is ([a-zA-Z]+)/i) || msg.match(/i am ([a-zA-Z]+)/i);
+            if (nameMatch) updateKnowledge(`User's name is ${nameMatch[1]}`);
+            
+            if (msg.toLowerCase().includes('i like') || msg.toLowerCase().includes('i love')) {
+                updateKnowledge(`User likes: ${msg.split(/like|love/i)[1].trim()}`);
+            }
+
             try {
                 const res = await fetch(getApiUrl(), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ messages: [{ role: 'system', content: "You are Jan Agent." }, ...chatHistory] })
+                    body: JSON.stringify({ 
+                        messages: [
+                            { role: 'system', content: `You are Jan Agent. Here is what you know about the user: ${knowledge}. Always remember and use this information when relevant.` },
+                            ...chatHistory 
+                        ] 
+                    })
                 });
                 const data = await res.json();
                 const reply = data.response || data.error;
@@ -256,6 +305,11 @@
             document.getElementById('matrixExitBtn').style.display = 'none';
             window.removeEventListener('keydown', window._stopOnEsc);
         }
+
+        input.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
     </script>
 </body>
 </html>
