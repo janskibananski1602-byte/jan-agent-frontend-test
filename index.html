@@ -17,7 +17,7 @@
             --ai-msg-text: #000000;
         }
 
-        /* Global Transition for ALL elements and properties */
+        /* Global Transition */
         *, *::before, *::after { 
             margin: 0; 
             padding: 0; 
@@ -25,14 +25,9 @@
             transition: background-color var(--transition-speed) ease-in-out, color var(--transition-speed) ease-in-out !important;
         }
 
-        /* Hide scrollbars but keep scrollable */
-        *::-webkit-scrollbar {
-            display: none;
-        }
-        * {
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
-        }
+        /* Hide scrollbars */
+        *::-webkit-scrollbar { display: none; }
+        * { -ms-overflow-style: none; scrollbar-width: none; }
 
         body {
             background-color: var(--bg-color);
@@ -46,75 +41,61 @@
             min-height: 100vh;
         }
 
-        header {
-            text-align: center;
-            margin-bottom: 15px;
-        }
-
-        .logo {
-            width: 60px;
-            height: 60px;
-            margin: 0 auto 5px;
-        }
-
+        header { text-align: center; margin-bottom: 15px; position: relative; }
+        .logo { width: 60px; height: 60px; margin: 0 auto 5px; }
         h1 { font-size: 24px; }
         .version { font-size: 12px; color: gray; }
 
-        .controls {
-            text-align: center;
-            margin-bottom: 15px;
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .color-control {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 14px;
-        }
-
-        input[type="color"] {
-            border: none;
-            width: 25px;
-            height: 25px;
+        .settings-icon {
+            position: absolute;
+            top: 0;
+            right: 0;
             cursor: pointer;
-            background: transparent;
+            padding: 10px;
         }
 
         .btn {
             background: transparent;
             border: 1px solid gray;
             color: inherit;
-            padding: 5px 10px;
+            padding: 8px 15px;
             border-radius: 5px;
             cursor: pointer;
             font-size: 14px;
         }
 
-        .btn:hover {
-            background: rgba(0,0,0,0.1);
-        }
+        .btn:hover { background: rgba(0,0,0,0.1); }
 
-        .clear-btn {
-            border-color: #ff4444;
-            color: #ff4444;
-        }
+        main { flex: 1; display: flex; flex-direction: column; width: 100%; }
 
-        .clear-btn:hover {
-            background: #ff4444;
-            color: white;
-        }
-
-        main {
-            flex: 1;
+        /* Auth Screen */
+        #authScreen {
             display: flex;
             flex-direction: column;
-            width: 100%;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            height: 60vh;
         }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .auth-form input {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid gray;
+            background: transparent;
+            color: inherit;
+        }
+
+        /* Chat Screen */
+        #chatScreen { display: none; flex-direction: column; flex: 1; }
 
         .chat {
             border: 1px solid gray;
@@ -131,260 +112,194 @@
             margin-bottom: 15px;
             padding: 10px 15px;
             word-wrap: break-word;
-            overflow-wrap: break-word;
             border-radius: 12px;
             max-width: 85%;
             line-height: 1.5;
             position: relative;
         }
 
-        .user {
-            align-self: flex-end;
-            margin-left: auto;
-            border-bottom-right-radius: 2px;
-            background-color: var(--user-msg-bg);
-            color: var(--user-msg-text);
-        }
+        .user { align-self: flex-end; margin-left: auto; border-bottom-right-radius: 2px; background-color: var(--user-msg-bg); color: var(--user-msg-text); }
+        .ai { align-self: flex-start; margin-right: auto; border-bottom-left-radius: 2px; background-color: var(--ai-msg-bg); color: var(--ai-msg-text); }
 
-        .ai {
-            align-self: flex-start;
-            margin-right: auto;
-            border-bottom-left-radius: 2px;
-            background-color: var(--ai-msg-bg);
-            color: var(--ai-msg-text);
-        }
+        .code-container { position: relative; margin: 10px 0; }
+        pre { background: rgba(0,0,0,0.1); padding: 15px; overflow-x: auto; border-radius: 8px; font-family: monospace; font-size: 14px; }
+        code { background: rgba(0,0,0,0.1); padding: 2px 4px; border-radius: 4px; }
+        .copy-btn { position: absolute; top: 5px; right: 5px; background: rgba(255,255,255,0.2); border: 1px solid rgba(0,0,0,0.1); color: inherit; padding: 2px 8px; border-radius: 4px; font-size: 10px; cursor: pointer; opacity: 0.6; }
 
-        /* Code Block Styling */
-        .code-container {
-            position: relative;
-            margin: 10px 0;
-        }
+        .bottom { display: flex; gap: 10px; padding-bottom: 10px; align-items: flex-end; }
+        textarea { flex: 1; padding: 12px; border: 1px solid gray; font-size: 16px; border-radius: 20px; background: transparent; color: inherit; outline: none; resize: none; }
+        button.send { width: 45px; height: 45px; background: #007bff; color: #fff; border: none; cursor: pointer; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
-        pre {
-            background: rgba(0,0,0,0.1);
-            padding: 15px;
-            overflow-x: auto;
-            border-radius: 8px;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 14px;
-        }
+        /* Modal */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+        .modal-content { background: var(--bg-color); color: var(--text-color); margin: 5% auto; padding: 20px; border: 1px solid #888; width: 90%; max-width: 500px; border-radius: 10px; max-height: 85vh; overflow-y: auto; }
 
-        code {
-            background: rgba(0,0,0,0.1);
-            padding: 2px 4px;
-            border-radius: 4px;
-        }
+        .settings-section { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(128,128,128,0.3); }
+        .settings-section h4 { margin-bottom: 10px; }
+        .color-control { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        
+        .profile-pfp { width: 80px; height: 80px; border-radius: 50%; background: #ccc; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-size: 30px; overflow: hidden; }
+        .profile-pfp img { width: 100%; height: 100%; object-fit: cover; }
 
-        .copy-btn {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: rgba(255,255,255,0.2);
-            border: 1px solid rgba(0,0,0,0.1);
-            color: inherit;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 10px;
-            cursor: pointer;
-            opacity: 0.6;
-            transition: opacity 0.2s;
-        }
+        .clear-messages-container { text-align: center; margin: 10px 0; }
+        .clear-btn { color: #ff4444; border-color: #ff4444; }
 
-        .copy-btn:hover {
-            opacity: 1;
-            background: rgba(255,255,255,0.4);
-        }
-
-        .typing {
-            font-style: italic;
-            font-size: 12px;
-            margin-bottom: 10px;
-            display: none;
-        }
-
-        .bottom {
-            display: flex;
-            gap: 10px;
-            padding-bottom: 10px;
-            align-items: flex-end;
-        }
-
-        textarea {
-            flex: 1;
-            padding: 12px;
-            border: 1px solid gray;
-            font-size: 16px;
-            font-family: inherit;
-            resize: none;
-            min-height: 45px;
-            max-height: 150px;
-            border-radius: 20px;
-            background: transparent;
-            color: inherit;
-            outline: none !important;
-            box-shadow: none !important;
-        }
-
-        button.send {
-            width: 45px;
-            height: 45px;
-            background: #007bff;
-            color: #fff;
-            border: none;
-            cursor: pointer;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            padding: 0;
-        }
-
-        button.send svg {
-            width: 24px;
-            height: 24px;
-            fill: currentColor;
-        }
-
-        button.send:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        /* Modal for History */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-
-        .modal-content {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 10% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 500px;
-            border-radius: 10px;
-            max-height: 70vh;
-            overflow-y: auto;
-        }
-
-        .history-item {
-            padding: 10px;
-            border-bottom: 1px solid gray;
-            cursor: pointer;
-        }
-
-        .history-item:hover {
-            background: rgba(0,0,0,0.05);
-        }
-
-        footer {
-            text-align: center;
-            font-size: 10px;
-            color: gray;
-            margin-top: auto;
-            padding: 10px 0;
-        }
-
-        @media (max-width: 600px) {
-            body { padding: 5px; }
-            .chat { height: 60vh; }
-            h1 { font-size: 20px; }
-        }
+        footer { text-align: center; font-size: 10px; color: gray; padding: 10px 0; }
     </style>
 </head>
 <body>
     <header>
-        <svg class="logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <svg class="logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <text x="50" y="75" font-size="70" font-weight="bold" text-anchor="middle" fill="#555" font-family="Arial">J</text>
         </svg>
         <h1>Jan Agent</h1>
         <div class="version">v0.5.0-beta</div>
+        <div class="settings-icon" id="settingsBtn" style="display:none;" onclick="openSettings()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        </div>
     </header>
 
-    <div class="controls">
-        <div class="color-control">
-            <label for="bgColor">BG:</label>
-            <input type="color" id="bgColor" value="#ffffff" onchange="updateColors()">
-        </div>
-        <div class="color-control">
-            <label for="textColor">Text:</label>
-            <input type="color" id="textColor" value="#000000" onchange="updateColors()">
-        </div>
-        <button class="btn" onclick="newChat()">New Chat</button>
-        <button class="btn" onclick="showHistory()">Chat History</button>
-        <button class="btn clear-btn" onclick="clearChat()">Remove it</button>
-    </div>
-
     <main>
-        <div class="chat" id="chat" role="log" aria-live="polite" aria-label="Chat history"></div>
-        <div id="typing" class="typing">Jan Agent is thinking...</div>
+        <div id="authScreen">
+            <div class="auth-form">
+                <input type="text" id="authName" placeholder="Name">
+                <input type="email" id="authEmail" placeholder="Email">
+                <button class="btn" onclick="login()">Login / Sign In</button>
+                <div style="text-align:center; margin: 10px 0;">or</div>
+                <button class="btn" onclick="continueAsGuest()">Continue as Guest</button>
+            </div>
+        </div>
 
-        <div class="bottom">
-            <textarea id="input" placeholder="Type message..." aria-label="Message input" rows="1"></textarea>
-            <button class="send" id="btn" onclick="send()" aria-label="Send message">
-                <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
-            </button>
+        <div id="chatScreen">
+            <div class="chat" id="chat"></div>
+            <div id="typing" style="display:none; font-style:italic; font-size:12px; margin-bottom:10px;">Jan Agent is thinking...</div>
+            <div class="bottom">
+                <textarea id="input" placeholder="Type message..." rows="1"></textarea>
+                <button class="send" id="sendBtn" onclick="send()">
+                    <svg viewBox="0 0 24 24" width="24" height="24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="white"></path></svg>
+                </button>
+            </div>
+            <div class="clear-messages-container">
+                <button class="btn clear-btn" onclick="clearChat()">Clear Messages</button>
+            </div>
         </div>
     </main>
 
-    <div id="historyModal" class="modal">
+    <div id="settingsModal" class="modal">
         <div class="modal-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h3>Chat History</h3>
-                <button class="btn" onclick="closeHistory()">Close</button>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h3>Settings</h3>
+                <button class="btn" onclick="closeSettings()">Close</button>
             </div>
-            <div id="historyList"></div>
+            
+            <div class="settings-section">
+                <h4>Profile</h4>
+                <div class="profile-pfp" id="settingsPfp">J</div>
+                <div style="margin-bottom:10px;"><strong>Name:</strong> <span id="profileName"></span></div>
+                <div style="margin-bottom:10px;">
+                    <strong>Email:</strong> <span id="profileEmail" style="display:none;"></span>
+                    <button class="btn" id="showEmailBtn" onclick="toggleEmail()" style="padding:2px 8px; font-size:10px;">Show</button>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h4>Appearance</h4>
+                <div class="color-control">
+                    <label>Background:</label>
+                    <input type="color" id="bgColor" onchange="updateColors()">
+                </div>
+                <div class="color-control">
+                    <label>Text Color:</label>
+                    <input type="color" id="textColor" onchange="updateColors()">
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h4>User Knowledge</h4>
+                <p style="font-size:12px; color:gray; margin-bottom:10px;">What Jan Agent has learned about you:</p>
+                <div id="userKnowledge" style="font-size:14px; white-space:pre-wrap; background:rgba(0,0,0,0.05); padding:10px; border-radius:5px;">No knowledge yet.</div>
+            </div>
+
+            <button class="btn" onclick="logout()" style="width:100%;">Logout</button>
         </div>
     </div>
 
     <footer>© Jan 2026. All rights reserved.</footer>
 
     <script>
-        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-            ? 'http://localhost:5000/chat' 
-            : 'https://jan-agent-backend-test.onrender.com/chat';
-
+        const API_URL = 'https://jan-agent-backend-test.onrender.com/chat';
         const chat = document.getElementById('chat');
         const input = document.getElementById('input');
-        const btn = document.getElementById('btn');
-        const typingIndicator = document.getElementById('typing');
-        const bgColorInput = document.getElementById('bgColor');
-        const textColorInput = document.getElementById('textColor');
-        const historyModal = document.getElementById('historyModal');
-        const historyList = document.getElementById('historyList');
-
-        let currentChatId = localStorage.getItem('currentChatId') || Date.now().toString();
-        let allChats = JSON.parse(localStorage.getItem('allChats')) || {};
+        const sendBtn = document.getElementById('sendBtn');
+        const typing = document.getElementById('typing');
         
-        if (!allChats[currentChatId]) {
-            allChats[currentChatId] = [];
-        }
+        let user = JSON.parse(localStorage.getItem('jan_user')) || null;
+        let knowledge = JSON.parse(localStorage.getItem('jan_knowledge')) || "";
+        let chatHistory = [];
 
-        // Initialize colors
-        const savedBgColor = localStorage.getItem('bgColor') || '#ffffff';
-        const savedTextColor = localStorage.getItem('textColor') || '#000000';
-        bgColorInput.value = savedBgColor;
-        textColorInput.value = savedTextColor;
-        updateColors(false);
-
-        // Restore current chat
+        // Init
         window.onload = () => {
-            loadChat(currentChatId);
-            input.focus();
+            if (user) showChat();
+            loadColors();
         };
 
+        function login() {
+            const name = document.getElementById('authName').value.trim();
+            const email = document.getElementById('authEmail').value.trim();
+            if (!name || !email) return alert('Please enter name and email');
+            user = { name, email, type: 'user', pfp: name[0].toUpperCase() };
+            localStorage.setItem('jan_user', JSON.stringify(user));
+            showChat();
+        }
+
+        function continueAsGuest() {
+            user = { name: 'Guest', email: 'N/A', type: 'guest', pfp: 'G' };
+            localStorage.setItem('jan_user', JSON.stringify(user));
+            showChat();
+        }
+
+        function logout() {
+            localStorage.removeItem('jan_user');
+            if (user.type === 'guest') localStorage.removeItem('jan_knowledge');
+            location.reload();
+        }
+
+        function showChat() {
+            document.getElementById('authScreen').style.display = 'none';
+            document.getElementById('chatScreen').style.display = 'flex';
+            document.getElementById('settingsBtn').style.display = 'block';
+            document.getElementById('profileName').textContent = user.name;
+            document.getElementById('profileEmail').textContent = user.email;
+            document.getElementById('settingsPfp').textContent = user.pfp;
+            updateKnowledgeDisplay();
+        }
+
+        function openSettings() { document.getElementById('settingsModal').style.display = 'block'; }
+        function closeSettings() { document.getElementById('settingsModal').style.display = 'none'; }
+
+        function toggleEmail() {
+            const email = document.getElementById('profileEmail');
+            const btn = document.getElementById('showEmailBtn');
+            if (email.style.display === 'none') {
+                email.style.display = 'inline';
+                btn.textContent = 'Hide';
+            } else {
+                email.style.display = 'none';
+                btn.textContent = 'Show';
+            }
+        }
+
+        function loadColors() {
+            const bg = localStorage.getItem('bgColor') || '#ffffff';
+            const text = localStorage.getItem('textColor') || '#000000';
+            document.getElementById('bgColor').value = bg;
+            document.getElementById('textColor').value = text;
+            updateColors(false);
+        }
+
         function updateColors(save = true) {
-            const bg = bgColorInput.value;
-            const text = textColorInput.value;
+            const bg = document.getElementById('bgColor').value;
+            const text = document.getElementById('textColor').value;
             document.documentElement.style.setProperty('--bg-color', bg);
             document.documentElement.style.setProperty('--text-color', text);
             const isDark = isColorDark(bg);
@@ -402,145 +317,102 @@
             const r = parseInt(hex.substr(0, 2), 16);
             const g = parseInt(hex.substr(2, 2), 16);
             const b = parseInt(hex.substr(4, 2), 16);
-            const brightness = ((r * 299) + (g * 587) + (b * 114)) / 1000;
-            return brightness < 128;
-        }
-
-        function newChat() {
-            currentChatId = Date.now().toString();
-            allChats[currentChatId] = [];
-            saveAllChats();
-            localStorage.setItem('currentChatId', currentChatId);
-            chat.innerHTML = '';
-            input.focus();
+            return ((r * 299) + (g * 587) + (b * 114)) / 1000 < 128;
         }
 
         function clearChat() {
-            if (confirm('Remove all messages in this chat?')) {
-                allChats[currentChatId] = [];
-                saveAllChats();
+            if (confirm('Clear all messages?')) {
                 chat.innerHTML = '';
+                chatHistory = [];
             }
         }
-
-        function showHistory() {
-            historyList.innerHTML = '';
-            const sortedIds = Object.keys(allChats).sort((a, b) => b - a);
-            sortedIds.forEach(id => {
-                const messages = allChats[id];
-                if (messages.length === 0) return;
-                const firstMsg = messages[0].content.substring(0, 30) + '...';
-                const item = document.createElement('div');
-                item.className = 'history-item';
-                item.textContent = firstMsg;
-                item.onclick = () => {
-                    loadChat(id);
-                    closeHistory();
-                };
-                historyList.appendChild(item);
-            });
-            historyModal.style.display = 'block';
-        }
-
-        function closeHistory() {
-            historyModal.style.display = 'none';
-        }
-
-        function loadChat(id) {
-            currentChatId = id;
-            localStorage.setItem('currentChatId', id);
-            chat.innerHTML = '';
-            allChats[id].forEach(msg => addMsg(msg.content, msg.role, true));
-            chat.scrollTop = chat.scrollHeight;
-        }
-
-        function saveAllChats() {
-            localStorage.setItem('allChats', JSON.stringify(allChats));
-        }
-
-        // Auto-resize textarea
-        input.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = (this.scrollHeight) + 'px';
-        });
 
         async function send() {
             const msg = input.value.trim();
-            if (!msg || btn.disabled) return;
+            if (!msg || sendBtn.disabled) return;
 
-            addMsg(msg, 'user', true);
-            allChats[currentChatId].push({ role: 'user', content: msg });
-            saveAllChats();
-
+            addMsg(msg, 'user');
+            chatHistory.push({ role: 'user', content: msg });
             input.value = '';
-            input.style.height = 'auto';
-            btn.disabled = true;
-            typingIndicator.style.display = 'block';
+            sendBtn.disabled = true;
+            typing.style.display = 'block';
             chat.scrollTop = chat.scrollHeight;
 
+            // Guest delay
+            if (user.type === 'guest') {
+                await new Promise(r => setTimeout(r, 3000 + Math.random() * 2000));
+            }
+
             try {
+                // Simple knowledge extraction (simulated)
+                if (msg.toLowerCase().includes('my name is')) {
+                    const name = msg.split('is')[1].trim();
+                    updateKnowledge(`User's name is ${name}`);
+                }
+
                 const res = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ messages: allChats[currentChatId] })
+                    body: JSON.stringify({ 
+                        messages: [
+                            { role: 'system', content: `You are Jan Agent. Here is what you know about the user: ${knowledge}` },
+                            ...chatHistory 
+                        ] 
+                    })
                 });
 
                 const data = await res.json();
-                typingIndicator.style.display = 'none';
-
-                if (!res.ok) {
-                    addMsg('Error: ' + (data.error || 'Something went wrong'), 'ai');
-                    return;
-                }
-
                 const reply = data.response || data.error;
-                addMsg(reply, 'ai', true);
-                allChats[currentChatId].push({ role: 'assistant', content: reply });
-                saveAllChats();
+                addMsg(reply, 'ai');
+                chatHistory.push({ role: 'assistant', content: reply });
             } catch (err) {
-                typingIndicator.style.display = 'none';
-                addMsg('Network error: ' + err.message, 'ai');
+                addMsg('Error: ' + err.message, 'ai');
             } finally {
-                btn.disabled = false;
-                input.focus();
+                typing.style.display = 'none';
+                sendBtn.disabled = false;
+                chat.scrollTop = chat.scrollHeight;
             }
         }
 
-        function addMsg(text, type, isMd = false) {
+        function addMsg(text, type) {
             const div = document.createElement('div');
             div.className = 'msg ' + type;
-
-            if (isMd) {
-                // Custom renderer for code blocks with copy button
-                const rawHtml = marked.parse(text);
-                div.innerHTML = rawHtml;
-                
-                // Find all pre tags and wrap them
-                const preTags = div.querySelectorAll('pre');
-                preTags.forEach(pre => {
-                    const container = document.createElement('div');
-                    container.className = 'code-container';
-                    pre.parentNode.insertBefore(container, pre);
-                    container.appendChild(pre);
-                    
-                    const copyBtn = document.createElement('button');
-                    copyBtn.className = 'copy-btn';
-                    copyBtn.textContent = 'Copy';
-                    copyBtn.onclick = () => {
-                        navigator.clipboard.writeText(pre.textContent).then(() => {
-                            copyBtn.textContent = 'Copied!';
-                            setTimeout(() => copyBtn.textContent = 'Copy', 2000);
-                        });
-                    };
-                    container.appendChild(copyBtn);
-                });
-            } else {
-                div.textContent = text;
-            }
+            div.innerHTML = marked.parse(text);
+            
+            // Code detection & copy
+            div.querySelectorAll('pre').forEach(pre => {
+                const container = document.createElement('div');
+                container.className = 'code-container';
+                pre.parentNode.insertBefore(container, pre);
+                container.appendChild(pre);
+                const btn = document.createElement('button');
+                btn.className = 'copy-btn';
+                btn.textContent = 'Copy';
+                btn.onclick = () => {
+                    navigator.clipboard.writeText(pre.textContent);
+                    btn.textContent = 'Copied!';
+                    setTimeout(() => btn.textContent = 'Copy', 2000);
+                };
+                container.appendChild(btn);
+            });
 
             chat.appendChild(div);
-            chat.scrollTop = chat.scrollHeight;
         }
+
+        function updateKnowledge(info) {
+            knowledge += (knowledge ? "\n" : "") + info;
+            localStorage.setItem('jan_knowledge', JSON.stringify(knowledge));
+            updateKnowledgeDisplay();
+        }
+
+        function updateKnowledgeDisplay() {
+            document.getElementById('userKnowledge').textContent = knowledge || "No knowledge yet.";
+        }
+
+        input.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
     </script>
 </body>
 </html>
