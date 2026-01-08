@@ -81,14 +81,16 @@
         .modal-content { background: var(--bg-color); color: var(--text-color); margin: 5% auto; padding: 20px; border: 1px solid #888; width: 90%; max-width: 500px; border-radius: 10px; max-height: 85vh; overflow-y: auto; }
 
         .settings-section { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(128,128,128,0.3); }
-        .profile-pfp { width: 80px; height: 80px; border-radius: 50%; background: #ccc; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-size: 30px; overflow: hidden; }
+        .profile-pfp { width: 80px; height: 80px; border-radius: 50%; background: #ccc; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-size: 30px; overflow: hidden; position: relative; cursor: pointer; }
+        .profile-pfp img { width: 100%; height: 100%; object-fit: cover; }
+        .pfp-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); color: white; display: none; align-items: center; justify-content: center; font-size: 10px; }
+        .profile-pfp:hover .pfp-overlay { display: flex; }
 
         .clear-messages-container { text-align: center; margin: 10px 0; }
         .clear-btn { color: #ff4444; border-color: #ff4444; }
 
         footer { text-align: center; font-size: 10px; color: gray; padding: 10px 0; }
 
-        /* Matrix Exit Button for Touch */
         #matrixExitBtn {
             display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
             z-index: 10001; background: rgba(0,255,0,0.2); color: #0f0; border: 1px solid #0f0;
@@ -114,7 +116,6 @@
                 <h3>Login</h3>
                 <input type="email" id="loginEmail" placeholder="Email">
                 <input type="password" id="loginPass" placeholder="Password">
-                <label style="font-size:12px;"><input type="checkbox" id="loginRemember"> Remember Me</label>
                 <button class="btn" onclick="handleLogin()">Login</button>
                 <div class="auth-toggle" onclick="toggleAuth('signup')">Don't have an account? Sign Up</div>
                 <div style="text-align:center; margin: 5px 0;">or</div>
@@ -125,7 +126,6 @@
                 <input type="text" id="signupName" placeholder="Name">
                 <input type="email" id="signupEmail" placeholder="Email">
                 <input type="password" id="signupPass" placeholder="Password">
-                <label style="font-size:12px;"><input type="checkbox" id="signupRemember"> Remember Me</label>
                 <button class="btn" onclick="handleSignup()">Sign Up</button>
                 <div class="auth-toggle" onclick="toggleAuth('login')">Already have an account? Login</div>
             </div>
@@ -155,7 +155,12 @@
             
             <div class="settings-section">
                 <h4>Profile</h4>
-                <div class="profile-pfp" id="settingsPfp">J</div>
+                <div class="profile-pfp" id="settingsPfp" onclick="triggerPfpUpload()">
+                    <span id="pfpText">J</span>
+                    <img id="pfpImg" style="display:none;">
+                    <div class="pfp-overlay" id="pfpOverlay">Change</div>
+                </div>
+                <input type="file" id="pfpInput" style="display:none;" accept="image/*" onchange="handlePfpChange(event)">
                 <div style="margin-bottom:10px;"><strong>Name:</strong> <span id="profileName"></span></div>
                 <div id="emailSection" style="margin-bottom:10px;">
                     <strong>Email:</strong> <span id="profileEmail" style="display:none;"></span>
@@ -206,14 +211,12 @@
         function handleLogin() {
             const email = document.getElementById('loginEmail').value.trim();
             const pass = document.getElementById('loginPass').value.trim();
-            const remember = document.getElementById('loginRemember').checked;
             if (!email || !pass) return alert('Fill all fields');
             
             const users = JSON.parse(localStorage.getItem('jan_registered_users')) || {};
             if (users[email] && users[email].pass === pass) {
-                user = { name: users[email].name, email, type: 'user', pfp: users[email].name[0].toUpperCase() };
-                const storage = remember ? localStorage : sessionStorage;
-                storage.setItem('jan_user', JSON.stringify(user));
+                user = { name: users[email].name, email, type: 'user', pfp: users[email].pfp || users[email].name[0].toUpperCase() };
+                localStorage.setItem('jan_user', JSON.stringify(user));
                 showChat();
             } else {
                 alert('Invalid credentials');
@@ -224,18 +227,16 @@
             const name = document.getElementById('signupName').value.trim();
             const email = document.getElementById('signupEmail').value.trim();
             const pass = document.getElementById('signupPass').value.trim();
-            const remember = document.getElementById('signupRemember').checked;
             if (!name || !email || !pass) return alert('Fill all fields');
 
             const users = JSON.parse(localStorage.getItem('jan_registered_users')) || {};
             if (users[email]) return alert('User already exists');
 
-            users[email] = { name, pass };
+            users[email] = { name, pass, pfp: name[0].toUpperCase() };
             localStorage.setItem('jan_registered_users', JSON.stringify(users));
             
             user = { name, email, type: 'user', pfp: name[0].toUpperCase() };
-            const storage = remember ? localStorage : sessionStorage;
-            storage.setItem('jan_user', JSON.stringify(user));
+            localStorage.setItem('jan_user', JSON.stringify(user));
             showChat();
         }
 
@@ -258,13 +259,51 @@
             document.getElementById('settingsBtn').style.display = 'block';
             document.getElementById('profileName').textContent = user.name;
             document.getElementById('profileEmail').textContent = user.email;
-            document.getElementById('settingsPfp').textContent = user.pfp;
             
+            const pfpText = document.getElementById('pfpText');
+            const pfpImg = document.getElementById('pfpImg');
+            if (user.pfp && user.pfp.startsWith('data:image')) {
+                pfpText.style.display = 'none';
+                pfpImg.src = user.pfp;
+                pfpImg.style.display = 'block';
+            } else {
+                pfpText.textContent = user.pfp || user.name[0].toUpperCase();
+                pfpText.style.display = 'block';
+                pfpImg.style.display = 'none';
+            }
+
             if (user.type === 'guest') {
                 document.getElementById('emailSection').style.display = 'none';
                 document.getElementById('knowledgeSection').style.display = 'none';
+                document.getElementById('pfpOverlay').style.display = 'none';
+                document.getElementById('settingsPfp').style.cursor = 'default';
             }
             updateKnowledgeDisplay();
+        }
+
+        function triggerPfpUpload() {
+            if (user.type === 'user') document.getElementById('pfpInput').click();
+        }
+
+        function handlePfpChange(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const base64 = e.target.result;
+                user.pfp = base64;
+                localStorage.setItem('jan_user', JSON.stringify(user));
+                
+                // Update registered users storage
+                const users = JSON.parse(localStorage.getItem('jan_registered_users')) || {};
+                if (users[user.email]) {
+                    users[user.email].pfp = base64;
+                    localStorage.setItem('jan_registered_users', JSON.stringify(users));
+                }
+                
+                showChat();
+            };
+            reader.readAsDataURL(file);
         }
 
         function openSettings() { document.getElementById('settingsModal').style.display = 'block'; }
@@ -355,7 +394,6 @@
 
         function updateKnowledgeDisplay() { document.getElementById('userKnowledge').textContent = knowledge || "No knowledge yet."; }
 
-        // Matrix Easter Egg
         let matrixInterval;
         function triggerMatrix() {
             const c = document.createElement('canvas');
