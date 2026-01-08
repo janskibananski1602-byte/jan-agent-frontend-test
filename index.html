@@ -52,14 +52,7 @@
 
         main { flex: 1; display: flex; flex-direction: column; width: 100%; }
 
-        /* Auth Screen */
-        #authScreen { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; height: 60vh; }
-        .auth-form { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 300px; }
-        .auth-form input { padding: 10px; border-radius: 5px; border: 1px solid gray; background: transparent; color: inherit; }
-        .auth-toggle { font-size: 12px; text-align: center; cursor: pointer; text-decoration: underline; }
-
-        /* Chat Screen */
-        #chatScreen { display: none; flex-direction: column; flex: 1; }
+        #chatScreen { display: flex; flex-direction: column; flex: 1; }
         .chat {
             border: 1px solid gray; height: 50vh; min-height: 300px; overflow-y: auto;
             padding: 15px; margin-bottom: 10px; border-radius: 8px; background-color: var(--chat-bg);
@@ -78,13 +71,12 @@
 
         /* Modal */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
-        .modal-content { background: var(--bg-color); color: var(--text-color); margin: 5% auto; padding: 20px; border: 1px solid #888; width: 90%; max-width: 500px; border-radius: 10px; max-height: 85vh; overflow-y: auto; }
+        .modal-content { background: var(--bg-color); color: var(--text-color); margin: 10% auto; padding: 20px; border: 1px solid #888; width: 90%; max-width: 400px; border-radius: 10px; }
 
-        .settings-section { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(128,128,128,0.3); }
-        .profile-pfp { width: 80px; height: 80px; border-radius: 50%; background: #ccc; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-size: 30px; overflow: hidden; position: relative; cursor: pointer; }
-        .profile-pfp img { width: 100%; height: 100%; object-fit: cover; }
-        .pfp-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); color: white; display: none; align-items: center; justify-content: center; font-size: 10px; }
-        .profile-pfp:hover .pfp-overlay { display: flex; }
+        .settings-section { margin-bottom: 20px; padding-bottom: 15px; }
+        .color-control { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        
+        .forgot-pass { font-size: 10px; color: gray; text-align: center; margin-top: 10px; }
 
         .clear-messages-container { text-align: center; margin: 10px 0; }
         .clear-btn { color: #ff4444; border-color: #ff4444; }
@@ -105,32 +97,12 @@
         </svg>
         <h1>Jan Agent</h1>
         <div class="version">v0.5.0-beta</div>
-        <div class="settings-icon" id="settingsBtn" style="display:none;" onclick="openSettings()">
+        <div class="settings-icon" onclick="openSettings()">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
         </div>
     </header>
 
     <main>
-        <div id="authScreen">
-            <div class="auth-form" id="loginForm">
-                <h3>Login</h3>
-                <input type="email" id="loginEmail" placeholder="Email">
-                <input type="password" id="loginPass" placeholder="Password">
-                <button class="btn" onclick="handleLogin()">Login</button>
-                <div class="auth-toggle" onclick="toggleAuth('signup')">Don't have an account? Sign Up</div>
-                <div style="text-align:center; margin: 5px 0;">or</div>
-                <button class="btn" onclick="continueAsGuest()">Continue as Guest</button>
-            </div>
-            <div class="auth-form" id="signupForm" style="display:none;">
-                <h3>Sign Up</h3>
-                <input type="text" id="signupName" placeholder="Name">
-                <input type="email" id="signupEmail" placeholder="Email">
-                <input type="password" id="signupPass" placeholder="Password">
-                <button class="btn" onclick="handleSignup()">Sign Up</button>
-                <div class="auth-toggle" onclick="toggleAuth('login')">Already have an account? Login</div>
-            </div>
-        </div>
-
         <div id="chatScreen">
             <div class="chat" id="chat"></div>
             <div id="typing" style="display:none; font-style:italic; font-size:12px; margin-bottom:10px;">Jan Agent is thinking...</div>
@@ -154,32 +126,12 @@
             </div>
             
             <div class="settings-section">
-                <h4>Profile</h4>
-                <div class="profile-pfp" id="settingsPfp" onclick="triggerPfpUpload()">
-                    <span id="pfpText">J</span>
-                    <img id="pfpImg" style="display:none;">
-                    <div class="pfp-overlay" id="pfpOverlay">Change</div>
-                </div>
-                <input type="file" id="pfpInput" style="display:none;" accept="image/*" onchange="handlePfpChange(event)">
-                <div style="margin-bottom:10px;"><strong>Name:</strong> <span id="profileName"></span></div>
-                <div id="emailSection" style="margin-bottom:10px;">
-                    <strong>Email:</strong> <span id="profileEmail" style="display:none;"></span>
-                    <button class="btn" id="showEmailBtn" onclick="toggleEmail()" style="padding:2px 8px; font-size:10px;">Show</button>
-                </div>
-            </div>
-
-            <div class="settings-section">
                 <h4>Appearance</h4>
                 <div class="color-control"><label>Background:</label><input type="color" id="bgColor" onchange="updateColors()"></div>
                 <div class="color-control"><label>Text Color:</label><input type="color" id="textColor" onchange="updateColors()"></div>
             </div>
 
-            <div class="settings-section" id="knowledgeSection">
-                <h4>User Knowledge</h4>
-                <div id="userKnowledge" style="font-size:14px; white-space:pre-wrap; background:rgba(0,0,0,0.05); padding:10px; border-radius:5px;">No knowledge yet.</div>
-            </div>
-
-            <button class="btn" onclick="logout()" style="width:100%;">Logout</button>
+            <div class="forgot-pass">Forgot password? DM jandev_official on Discord</div>
         </div>
     </div>
 
@@ -193,128 +145,12 @@
         const input = document.getElementById('input');
         const sendBtn = document.getElementById('sendBtn');
         const typing = document.getElementById('typing');
-        
-        let user = JSON.parse(localStorage.getItem('jan_user')) || JSON.parse(sessionStorage.getItem('jan_user')) || null;
-        let knowledge = JSON.parse(localStorage.getItem('jan_knowledge')) || "";
         let chatHistory = [];
 
-        window.onload = () => {
-            if (user) showChat();
-            loadColors();
-        };
-
-        function toggleAuth(type) {
-            document.getElementById('loginForm').style.display = type === 'login' ? 'flex' : 'none';
-            document.getElementById('signupForm').style.display = type === 'signup' ? 'flex' : 'none';
-        }
-
-        function handleLogin() {
-            const email = document.getElementById('loginEmail').value.trim();
-            const pass = document.getElementById('loginPass').value.trim();
-            if (!email || !pass) return alert('Fill all fields');
-            
-            const users = JSON.parse(localStorage.getItem('jan_registered_users')) || {};
-            if (users[email] && users[email].pass === pass) {
-                user = { name: users[email].name, email, type: 'user', pfp: users[email].pfp || users[email].name[0].toUpperCase() };
-                localStorage.setItem('jan_user', JSON.stringify(user));
-                showChat();
-            } else {
-                alert('Invalid credentials');
-            }
-        }
-
-        function handleSignup() {
-            const name = document.getElementById('signupName').value.trim();
-            const email = document.getElementById('signupEmail').value.trim();
-            const pass = document.getElementById('signupPass').value.trim();
-            if (!name || !email || !pass) return alert('Fill all fields');
-
-            const users = JSON.parse(localStorage.getItem('jan_registered_users')) || {};
-            if (users[email]) return alert('User already exists');
-
-            users[email] = { name, pass, pfp: name[0].toUpperCase() };
-            localStorage.setItem('jan_registered_users', JSON.stringify(users));
-            
-            user = { name, email, type: 'user', pfp: name[0].toUpperCase() };
-            localStorage.setItem('jan_user', JSON.stringify(user));
-            showChat();
-        }
-
-        function continueAsGuest() {
-            user = { name: 'Guest', email: 'N/A', type: 'guest', pfp: 'G' };
-            sessionStorage.setItem('jan_user', JSON.stringify(user));
-            showChat();
-        }
-
-        function logout() {
-            localStorage.removeItem('jan_user');
-            sessionStorage.removeItem('jan_user');
-            if (user.type === 'guest') localStorage.removeItem('jan_knowledge');
-            location.reload();
-        }
-
-        function showChat() {
-            document.getElementById('authScreen').style.display = 'none';
-            document.getElementById('chatScreen').style.display = 'flex';
-            document.getElementById('settingsBtn').style.display = 'block';
-            document.getElementById('profileName').textContent = user.name;
-            document.getElementById('profileEmail').textContent = user.email;
-            
-            const pfpText = document.getElementById('pfpText');
-            const pfpImg = document.getElementById('pfpImg');
-            if (user.pfp && user.pfp.startsWith('data:image')) {
-                pfpText.style.display = 'none';
-                pfpImg.src = user.pfp;
-                pfpImg.style.display = 'block';
-            } else {
-                pfpText.textContent = user.pfp || user.name[0].toUpperCase();
-                pfpText.style.display = 'block';
-                pfpImg.style.display = 'none';
-            }
-
-            if (user.type === 'guest') {
-                document.getElementById('emailSection').style.display = 'none';
-                document.getElementById('knowledgeSection').style.display = 'none';
-                document.getElementById('pfpOverlay').style.display = 'none';
-                document.getElementById('settingsPfp').style.cursor = 'default';
-            }
-            updateKnowledgeDisplay();
-        }
-
-        function triggerPfpUpload() {
-            if (user.type === 'user') document.getElementById('pfpInput').click();
-        }
-
-        function handlePfpChange(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const base64 = e.target.result;
-                user.pfp = base64;
-                localStorage.setItem('jan_user', JSON.stringify(user));
-                
-                // Update registered users storage
-                const users = JSON.parse(localStorage.getItem('jan_registered_users')) || {};
-                if (users[user.email]) {
-                    users[user.email].pfp = base64;
-                    localStorage.setItem('jan_registered_users', JSON.stringify(users));
-                }
-                
-                showChat();
-            };
-            reader.readAsDataURL(file);
-        }
+        window.onload = () => { loadColors(); };
 
         function openSettings() { document.getElementById('settingsModal').style.display = 'block'; }
         function closeSettings() { document.getElementById('settingsModal').style.display = 'none'; }
-
-        function toggleEmail() {
-            const email = document.getElementById('profileEmail');
-            const btn = document.getElementById('showEmailBtn');
-            email.style.display = email.style.display === 'none' ? 'inline' : 'none';
-            btn.textContent = email.style.display === 'none' ? 'Show' : 'Hide';
-        }
 
         function loadColors() {
             const bg = localStorage.getItem('bgColor') || '#ffffff';
@@ -352,14 +188,11 @@
             input.value = ''; sendBtn.disabled = true; typing.style.display = 'block';
             chat.scrollTop = chat.scrollHeight;
 
-            if (user.type === 'guest') await new Promise(r => setTimeout(r, 3000 + Math.random() * 2000));
-
             try {
-                if (msg.toLowerCase().includes('my name is')) updateKnowledge(`User's name is ${msg.split('is')[1].trim()}`);
                 const res = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ messages: [{ role: 'system', content: `You are Jan Agent. User Knowledge: ${knowledge}` }, ...chatHistory] })
+                    body: JSON.stringify({ messages: [{ role: 'system', content: "You are Jan Agent." }, ...chatHistory] })
                 });
                 const data = await res.json();
                 const reply = data.response || data.error;
@@ -385,14 +218,6 @@
             });
             chat.appendChild(div);
         }
-
-        function updateKnowledge(info) {
-            knowledge += (knowledge ? "\n" : "") + info;
-            localStorage.setItem('jan_knowledge', JSON.stringify(knowledge));
-            updateKnowledgeDisplay();
-        }
-
-        function updateKnowledgeDisplay() { document.getElementById('userKnowledge').textContent = knowledge || "No knowledge yet."; }
 
         let matrixInterval;
         function triggerMatrix() {
