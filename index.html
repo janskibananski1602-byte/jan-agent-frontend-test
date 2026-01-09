@@ -120,7 +120,7 @@
             <text x="50" y="75" font-size="70" font-weight="bold" text-anchor="middle" fill="#555" font-family="Arial">J</text>
         </svg>
         <h1>Jan Agent</h1>
-        <div class="version">v0.5.0-beta</div>
+        <div class="version">v0.5.1-beta</div>
     </header>
 
     <main>
@@ -163,8 +163,14 @@
     </footer>
 
     <script>
+        // Obfuscated API URL logic - updated to handle potential environment differences
         const _0x4a2b = ['chat', 'onrender', 'test', 'backend', 'agent', 'jan', 'https://', '.', '-', 'com'];
         const getApiUrl = () => {
+            // If running locally or on a custom domain, you might want to use a relative path or environment variable
+            // For now, keeping the user's original logic but making it more robust
+            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            if (isLocal) return '/chat';
+            
             return _0x4a2b[6] + _0x4a2b[5] + _0x4a2b[8] + _0x4a2b[4] + _0x4a2b[8] + _0x4a2b[3] + _0x4a2b[8] + _0x4a2b[2] + _0x4a2b[7] + _0x4a2b[1] + _0x4a2b[7] + _0x4a2b[9] + '/' + _0x4a2b[0];
         };
 
@@ -199,7 +205,7 @@
         function updateModelUI() {
             document.getElementById('fastBtn').classList.toggle('active', currentModel === 'fast');
             document.getElementById('proBtn').classList.toggle('active', currentModel === 'pro');
-            
+
             if (currentModel === 'fast') {
                 modelInfo.textContent = "Fast 1.0: Tested, free, unlimited";
             } else {
@@ -289,26 +295,36 @@
                     })
                 });
                 const data = await res.json();
-                let reply = data.response || data.error;
+                
+                if (data.error) {
+                    addMsg('**Error:** ' + data.error, 'ai');
+                } else {
+                    let reply = data.response;
 
-                if (currentModel === 'pro' && !data.error) {
-                    proMessageCount++;
-                    localStorage.setItem('jan_pro_count', proMessageCount);
-                    updateModelUI();
+                    if (currentModel === 'pro') {
+                        proMessageCount++;
+                        localStorage.setItem('jan_pro_count', proMessageCount);
+                        updateModelUI();
+                    }
+
+                    if (reply.startsWith('[KNOWLEDGE:')) {
+                        const parts = reply.split(']');
+                        const newInfo = parts[0].replace('[KNOWLEDGE:', '').trim();
+                        updateKnowledge(newInfo);
+                        reply = parts.slice(1).join(']').trim();
+                    }
+
+                    addMsg(reply, 'ai');
+                    chatHistory.push({ role: 'assistant', content: reply });
+                    localStorage.setItem('jan_chat_history', JSON.stringify(chatHistory));
                 }
-
-                if (reply.startsWith('[KNOWLEDGE:')) {
-                    const parts = reply.split(']');
-                    const newInfo = parts[0].replace('[KNOWLEDGE:', '').trim();
-                    updateKnowledge(newInfo);
-                    reply = parts.slice(1).join(']').trim();
-                }
-
-                addMsg(reply, 'ai');
-                chatHistory.push({ role: 'assistant', content: reply });
-                localStorage.setItem('jan_chat_history', JSON.stringify(chatHistory));
-            } catch (err) { addMsg('Error: ' + err.message, 'ai'); }
-            finally { typing.style.display = 'none'; sendBtn.disabled = false; chat.scrollTop = chat.scrollHeight; }
+            } catch (err) { 
+                addMsg('**Network Error:** ' + err.message, 'ai'); 
+            } finally { 
+                typing.style.display = 'none'; 
+                sendBtn.disabled = false; 
+                chat.scrollTop = chat.scrollHeight; 
+            }
         }
 
         function addMsg(text, type, save = true) {
