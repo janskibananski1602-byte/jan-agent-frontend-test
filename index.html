@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI</title>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         :root { 
             --bg: #ffffff; --text: #111111; --accent: #0070f3; 
@@ -37,7 +36,7 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
         .role { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--gray); margin-bottom: 8px; }
-        .content { font-size: 16px; line-height: 1.6; }
+        .content { font-size: 16px; line-height: 1.6; white-space: pre-wrap; }
         .content p { margin: 0 0 16px 0; }
         .content pre { background: var(--light-gray); padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 14px; border: 1px solid var(--border); }
         .content code { font-family: monospace; background: var(--light-gray); padding: 2px 4px; border-radius: 4px; }
@@ -59,6 +58,8 @@
         }
         button:hover { opacity: 0.8; }
         button:disabled { opacity: 0.3; cursor: not-allowed; }
+        
+        #clear-btn { background: transparent; color: var(--gray); font-size: 11px; padding: 4px 8px; }
     </style>
 </head>
 <body>
@@ -66,10 +67,13 @@
     <div id="chat-container"></div>
 
     <div id="input-area">
+        <button id="clear-btn">Clear</button>
         <input type="text" id="user-input" placeholder="Ask anything..." autocomplete="off">
         <button id="send-btn">Send</button>
     </div>
 
+    <!-- Load marked.js at the end -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
         // REPLACE THIS with your actual Render backend URL
         const BACKEND_URL = "https://your-app-name.onrender.com/chat";
@@ -77,23 +81,36 @@
         const container = document.getElementById('chat-container');
         const input = document.getElementById('user-input');
         const btn = document.getElementById('send-btn');
+        const clearBtn = document.getElementById('clear-btn');
 
         let history = JSON.parse(localStorage.getItem('chat_history')) || [];
+
+        function safeMarked(text) {
+            try {
+                return typeof marked !== 'undefined' ? marked.parse(text) : text.replace(/\n/g, '<br>');
+            } catch (e) {
+                return text;
+            }
+        }
 
         function addMessageToDOM(role, text, scroll = true) {
             const div = document.createElement('div');
             div.className = 'msg';
             const roleLabel = role === 'user' ? 'You' : 'AI';
-            div.innerHTML = `<div class="role">${roleLabel}</div><div class="content">${marked.parse(text)}</div>`;
+            div.innerHTML = `<div class="role">${roleLabel}</div><div class="content">${safeMarked(text)}</div>`;
             container.appendChild(div);
             if (scroll) container.scrollTop = container.scrollHeight;
         }
 
         function renderHistory() {
             container.innerHTML = '';
-            history.forEach(msg => {
-                addMessageToDOM(msg.role, msg.content, false);
-            });
+            if (history.length === 0) {
+                addMessageToDOM('assistant', 'Hello. How can I help you today?', false);
+            } else {
+                history.forEach(msg => {
+                    addMessageToDOM(msg.role, msg.content, false);
+                });
+            }
             container.scrollTop = container.scrollHeight;
         }
 
@@ -128,11 +145,19 @@
             }
         }
 
+        clearBtn.onclick = () => {
+            if (confirm('Clear conversation?')) {
+                history = [];
+                localStorage.removeItem('chat_history');
+                renderHistory();
+            }
+        };
+
         btn.onclick = send;
         input.onkeypress = (e) => { if (e.key === 'Enter') send(); };
 
         // Initial render
-        renderHistory();
+        window.onload = renderHistory;
     </script>
 </body>
 </html>
