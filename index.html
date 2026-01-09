@@ -1,390 +1,143 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jan Agent</title>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <style>
-        :root {
-            --transition-speed: 0.4s;
-            --bg-color: #ffffff;
-            --text-color: #000000;
-            --chat-bg: #fafafa;
-            --user-msg-bg: #007bff;
-            --user-msg-text: #ffffff;
-            --ai-msg-bg: #e9e9eb;
-            --ai-msg-text: #000000;
-        }
+import os
+import time
+import requests
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 
-        *, *::before, *::after { 
-            margin: 0; padding: 0; box-sizing: border-box; 
-            transition: background-color var(--transition-speed) ease-in-out, color var(--transition-speed) ease-in-out !important;
-        }
+app = Flask(__name__)
+CORS(app)
 
-        *::-webkit-scrollbar { display: none; }
-        * { -ms-overflow-style: none; scrollbar-width: none; }
+# API Keys and Prompts for Fast 1.0
+FAST_KEYS = [
+    os.environ.get("FAST_1.0_API_KEY_1"),
+    os.environ.get("FAST_1.0_API_KEY_2")
+]
+FAST_KEYS = [key for key in FAST_KEYS if key]
+# Default prompt if env var is missing
+DEFAULT_FAST_PROMPT = "You are Jan Agent Fast 1.0, a helpful and efficient AI assistant. You are NOT ChatGPT. You were created by Jan."
+FAST_SYSTEM_PROMPT = os.environ.get("FAST_1.0_SYSTEM_PROMPT", DEFAULT_FAST_PROMPT)
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            padding: 10px;
-            max-width: 800px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
+# API Keys and Prompts for Pro 1.0
+PRO_KEYS = [
+    os.environ.get("PRO_1.0_API_KEY_1")
+]
+PRO_KEYS = [key for key in PRO_KEYS if key]
+# Default prompt if env var is missing
+DEFAULT_PRO_PROMPT = "You are Jan Agent Pro 1.0, a highly intelligent and advanced AI assistant. You are NOT ChatGPT. You were created by Jan."
+PRO_SYSTEM_PROMPT = os.environ.get("PRO_1.0_SYSTEM_PROMPT", DEFAULT_PRO_PROMPT)
 
-        header { text-align: center; margin-bottom: 15px; position: relative; }
-        .logo { width: 60px; height: 60px; margin: 0 auto 5px; cursor: pointer; }
-        h1 { font-size: 24px; }
-        .version { font-size: 12px; color: gray; }
+# Track current key index for each model
+current_fast_key_index = 0
+current_pro_key_index = 0
 
-        .model-selector {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin: 10px 0;
-        }
-        .model-btn {
-            padding: 8px 16px;
-            border-radius: 20px;
-            border: 1px solid #ccc;
-            background: transparent;
-            color: inherit;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-        .model-btn.active {
-            background: #007bff;
-            color: white;
-            border-color: #007bff;
-            box-shadow: 0 2px 4px rgba(0,123,255,0.3);
-        }
-        .model-info {
-            font-size: 12px;
-            color: #666;
-            text-align: center;
-            margin-bottom: 15px;
-            font-style: italic;
-        }
+@app.route("/")
+def home():
+    return "Jan Agent backend alive"
 
-        .btn {
-            background: transparent; border: 1px solid gray; color: inherit;
-            padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 16px;
-        }
-        .btn:hover { background: rgba(0,0,0,0.1); }
+@app.route("/chat", methods=["POST"])
+def chat():
+    global current_fast_key_index, current_pro_key_index
 
-        main { flex: 1; display: flex; flex-direction: column; width: 100%; }
+    try:
+        data = request.get_json(force=True)
+        model_type = data.get("model_type", "fast")
+        
+        if model_type == "pro":
+            keys = PRO_KEYS
+            system_prompt = PRO_SYSTEM_PROMPT
+            model_name = "openai/gpt-oss-120b"
+            current_index = current_pro_key_index
+        else:
+            keys = FAST_KEYS
+            system_prompt = FAST_SYSTEM_PROMPT
+            model_name = "openai/gpt-oss-20b"
+            current_index = current_fast_key_index
 
-        #chatScreen { display: flex; flex-direction: column; flex: 1; }
-        .chat {
-            border: 1px solid gray; height: 50vh; min-height: 300px; overflow-y: auto;
-            padding: 15px; margin-bottom: 10px; border-radius: 8px; background-color: var(--chat-bg);
-        }
-        .msg { margin-bottom: 15px; padding: 10px 15px; word-wrap: break-word; border-radius: 12px; max-width: 85%; line-height: 1.5; position: relative; }
-        .user { align-self: flex-end; margin-left: auto; border-bottom-right-radius: 2px; background-color: var(--user-msg-bg); color: var(--user-msg-text); }
-        .ai { align-self: flex-start; margin-right: auto; border-bottom-left-radius: 2px; background-color: var(--ai-msg-bg); color: var(--ai-msg-text); }
+        if not keys:
+            return jsonify({"error": f"No API keys configured for {model_type} model"}), 500
 
-        .code-container { position: relative; margin: 10px 0; }
-        pre { background: rgba(0,0,0,0.1); padding: 15px; overflow-x: auto; border-radius: 8px; font-family: monospace; font-size: 14px; }
-        .copy-btn { position: absolute; top: 5px; right: 5px; background: rgba(255,255,255,0.2); border: 1px solid rgba(0,0,0,0.1); color: inherit; padding: 2px 8px; border-radius: 4px; font-size: 10px; cursor: pointer; opacity: 0.6; }
+        # Get messages from request
+        input_messages = data.get("messages", [])
+        if not input_messages and "message" in data:
+            input_messages = [{"role": "user", "content": data["message"]}]
 
-        .bottom { display: flex; gap: 10px; padding-bottom: 10px; align-items: flex-end; }
-        textarea { flex: 1; padding: 12px; border: 1px solid gray; font-size: 16px; border-radius: 20px; background: transparent; color: inherit; outline: none; resize: none; }
-        button.send { width: 45px; height: 45px; background: #007bff; color: #fff; border: none; cursor: pointer; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        # STRICT SYSTEM PROMPT ENFORCEMENT:
+        # We remove any existing system messages and insert our own at the very beginning.
+        filtered_messages = [m for m in input_messages if m.get("role") != "system"]
+        
+        # Add the knowledge context if provided by frontend
+        knowledge = data.get("knowledge", "")
+        full_system_prompt = system_prompt
+        if knowledge:
+            full_system_prompt += f"\n\nUser Knowledge (strictly for your reference, do not mention this unless asked): {knowledge}"
+        
+        # Final instruction to ensure identity
+        full_system_prompt += "\n\nIMPORTANT: Your name is Jan Agent. You must never identify as ChatGPT or any other AI."
 
-        .clear-messages-container { text-align: center; margin: 10px 0; }
-        .clear-btn { color: #ff4444; border-color: #ff4444; font-size: 14px; padding: 8px 15px; }
+        messages = [{"role": "system", "content": full_system_prompt}] + filtered_messages
 
-        footer { text-align: center; padding: 20px 0; border-top: 1px solid rgba(128,128,128,0.2); margin-top: auto; }
-        .footer-controls { display: flex; justify-content: center; align-items: center; gap: 20px; margin-bottom: 10px; }
-        .theme-control { display: flex; align-items: center; gap: 8px; font-size: 12px; color: gray; }
-        .theme-control input[type="color"] { width: 25px; height: 25px; border: none; cursor: pointer; background: transparent; padding: 0; }
-        .copyright { font-size: 10px; color: gray; }
+        # Try each API key
+        for key_attempt in range(len(keys)):
+            api_key = keys[current_index]
 
-        #matrixExitBtn {
-            display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            z-index: 10001; background: rgba(0,255,0,0.2); color: #0f0; border: 1px solid #0f0;
-            padding: 10px 20px; border-radius: 5px; cursor: pointer; font-family: monospace;
-        }
-    </style>
-</head>
-<body>
-    <header>
-        <svg class="logo" viewBox="0 0 100 100" onclick="triggerMatrix()">
-            <text x="50" y="75" font-size="70" font-weight="bold" text-anchor="middle" fill="#555" font-family="Arial">J</text>
-        </svg>
-        <h1>Jan Agent</h1>
-        <div class="version">v0.5.1-beta</div>
-    </header>
+            max_retries = 2
+            for attempt in range(max_retries):
+                try:
+                    response = requests.post(
+                        "https://api.groq.com/openai/v1/chat/completions",
+                        headers={
+                            "Authorization": f"Bearer {api_key}",
+                            "Content-Type": "application/json"
+                        },
+                        json={
+                            "model": model_name,
+                            "messages": messages,
+                            "temperature": 0.7
+                        },
+                        timeout=30
+                    )
 
-    <main>
-        <div class="model-selector">
-            <button id="fastBtn" class="model-btn active" onclick="switchModel('fast')">Fast 1.0</button>
-            <button id="proBtn" class="model-btn" onclick="switchModel('pro')">Pro 1.0</button>
-        </div>
-        <div id="modelInfo" class="model-info">Fast 1.0: Tested, free, unlimited</div>
+                    if response.status_code == 400:
+                        error_data = response.json()
+                        return jsonify({"error": f"Groq API 400 Error: {error_data.get('error', {}).get('message', 'Bad Request')}"}), 400
 
-        <div id="chatScreen">
-            <div class="chat" id="chat"></div>
-            <div id="typing" style="display:none; font-style:italic; font-size:12px; margin-bottom:10px;">Jan Agent is thinking...</div>
-            <div class="bottom">
-                <textarea id="input" placeholder="Type message..." rows="1"></textarea>
-                <button class="send" id="sendBtn" onclick="send()">
-                    <svg viewBox="0 0 24 24" width="24" height="24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="white"></path></svg>
-                </button>
-            </div>
-            <div class="clear-messages-container">
-                <button class="btn clear-btn" onclick="clearChat()">Clear Messages</button>
-            </div>
-        </div>
-    </main>
+                    response.raise_for_status()
+                    return jsonify({"response": response.json()["choices"][0]["message"]["content"]})
 
-    <button id="matrixExitBtn" onclick="stopMatrix()">EXIT MATRIX</button>
+                except requests.exceptions.HTTPError as e:
+                    if e.response.status_code == 429:
+                        if key_attempt < len(keys) - 1:
+                            current_index = (current_index + 1) % len(keys)
+                            if model_type == "pro":
+                                current_pro_key_index = current_index
+                            else:
+                                current_fast_key_index = current_index
+                            break
+                        elif attempt < max_retries - 1:
+                            time.sleep(2 ** attempt)
+                            continue
+                        return jsonify({"error": "All API keys exhausted. Please wait."}), 429
+                    elif e.response.status_code >= 500:
+                        return jsonify({"error": "Server error. Please try again later."}), 500
+                    else:
+                        # Return the actual error message from Groq if possible
+                        try:
+                            err_msg = e.response.json().get('error', {}).get('message', str(e))
+                        except:
+                            err_msg = str(e)
+                        return jsonify({"error": f"API error: {err_msg}"}), e.response.status_code
 
-    <footer>
-        <div class="footer-controls">
-            <div class="theme-control">
-                <label>BG:</label>
-                <input type="color" id="bgColor" oninput="updateColors()">
-            </div>
-            <div class="theme-control">
-                <label>Text:</label>
-                <input type="color" id="textColor" oninput="updateColors()">
-            </div>
-            <button class="btn" onclick="clearKnowledge()" style="font-size:10px; padding:4px 8px; border-color:rgba(128,128,128,0.5);">Reset AI</button>
-        </div>
-        <div class="copyright">© Jan 2026. All rights reserved.</div>
-    </footer>
+                except requests.exceptions.Timeout:
+                    return jsonify({"error": "Request timed out. Please try again."}), 504
 
-    <script>
-        // Obfuscated API URL logic - updated to handle potential environment differences
-        const _0x4a2b = ['chat', 'onrender', 'test', 'backend', 'agent', 'jan', 'https://', '.', '-', 'com'];
-        const getApiUrl = () => {
-            // If running locally or on a custom domain, you might want to use a relative path or environment variable
-            // For now, keeping the user's original logic but making it more robust
-            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-            if (isLocal) return '/chat';
-            
-            return _0x4a2b[6] + _0x4a2b[5] + _0x4a2b[8] + _0x4a2b[4] + _0x4a2b[8] + _0x4a2b[3] + _0x4a2b[8] + _0x4a2b[2] + _0x4a2b[7] + _0x4a2b[1] + _0x4a2b[7] + _0x4a2b[9] + '/' + _0x4a2b[0];
-        };
+                except requests.exceptions.RequestException as e:
+                    return jsonify({"error": f"Network error: {str(e)}"}), 503
 
-        const chat = document.getElementById('chat');
-        const input = document.getElementById('input');
-        const sendBtn = document.getElementById('sendBtn');
-        const typing = document.getElementById('typing');
-        const modelInfo = document.getElementById('modelInfo');
+        return jsonify({"error": "All API keys failed"}), 429
 
-        let chatHistory = JSON.parse(localStorage.getItem('jan_chat_history')) || [];
-        let knowledge = JSON.parse(localStorage.getItem('jan_knowledge')) || "";
-        let currentModel = 'fast';
-        let proMessageCount = parseInt(localStorage.getItem('jan_pro_count')) || 0;
+    except Exception as e:
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
-        window.onload = () => { 
-            loadColors(); 
-            renderHistory();
-            updateModelUI();
-        };
-
-        function switchModel(model) {
-            if (currentModel !== model) {
-                currentModel = model;
-                // Start new chat on model switch
-                chatHistory = [];
-                localStorage.removeItem('jan_chat_history');
-                renderHistory();
-                updateModelUI();
-            }
-        }
-
-        function updateModelUI() {
-            document.getElementById('fastBtn').classList.toggle('active', currentModel === 'fast');
-            document.getElementById('proBtn').classList.toggle('active', currentModel === 'pro');
-
-            if (currentModel === 'fast') {
-                modelInfo.textContent = "Fast 1.0: Tested, free, unlimited";
-            } else {
-                const remaining = Math.max(0, 20 - proMessageCount);
-                modelInfo.textContent = `Pro 1.0: Experimental, free, limited: ${remaining} messages left`;
-            }
-        }
-
-        function loadColors() {
-            const bg = localStorage.getItem('bgColor') || '#ffffff';
-            const text = localStorage.getItem('textColor') || '#000000';
-            document.getElementById('bgColor').value = bg;
-            document.getElementById('textColor').value = text;
-            updateColors(false);
-        }
-
-        function updateColors(save = true) {
-            const bg = document.getElementById('bgColor').value;
-            const text = document.getElementById('textColor').value;
-            document.documentElement.style.setProperty('--bg-color', bg);
-            document.documentElement.style.setProperty('--text-color', text);
-            const isDark = isColorDark(bg);
-            document.documentElement.style.setProperty('--chat-bg', isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)');
-            document.documentElement.style.setProperty('--ai-msg-bg', isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)');
-            document.documentElement.style.setProperty('--ai-msg-text', text);
-            if (save) { localStorage.setItem('bgColor', bg); localStorage.setItem('textColor', text); }
-        }
-
-        function isColorDark(color) {
-            const hex = color.replace('#', '');
-            const r = parseInt(hex.substr(0, 2), 16), g = parseInt(hex.substr(2, 2), 16), b = parseInt(hex.substr(4, 2), 16);
-            return ((r * 299) + (g * 587) + (b * 114)) / 1000 < 128;
-        }
-
-        function clearChat() { 
-            if (confirm('Clear all messages?')) { 
-                chat.innerHTML = ''; 
-                chatHistory = []; 
-                localStorage.removeItem('jan_chat_history');
-            } 
-        }
-
-        function updateKnowledge(info) {
-            if (!knowledge.includes(info)) {
-                knowledge += (knowledge ? "\n" : "") + info;
-                localStorage.setItem('jan_knowledge', JSON.stringify(knowledge));
-            }
-        }
-
-        function clearKnowledge() {
-            if (confirm('Reset AI memory? This will clear everything it has learned about you.')) {
-                knowledge = "";
-                localStorage.removeItem('jan_knowledge');
-            }
-        }
-
-        function renderHistory() {
-            chat.innerHTML = '';
-            chatHistory.forEach(msg => addMsg(msg.content, msg.role === 'user' ? 'user' : 'ai', false));
-            chat.scrollTop = chat.scrollHeight;
-        }
-
-        async function send() {
-            const msg = input.value.trim();
-            if (!msg || sendBtn.disabled) return;
-
-            if (currentModel === 'pro' && proMessageCount >= 20) {
-                addMsg("You have reached the limit of 20 messages for Jan Agent Pro 1.0. Please switch to Fast 1.0.", 'ai');
-                return;
-            }
-
-            addMsg(msg, 'user');
-            chatHistory.push({ role: 'user', content: msg });
-            localStorage.setItem('jan_chat_history', JSON.stringify(chatHistory));
-
-            input.value = ''; sendBtn.disabled = true; typing.style.display = 'block';
-            chat.scrollTop = chat.scrollHeight;
-
-            try {
-                const res = await fetch(getApiUrl(), {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        model_type: currentModel,
-                        knowledge: knowledge,
-                        messages: chatHistory
-                    })
-                });
-                const data = await res.json();
-                
-                if (data.error) {
-                    addMsg('**Error:** ' + data.error, 'ai');
-                } else {
-                    let reply = data.response;
-
-                    if (currentModel === 'pro') {
-                        proMessageCount++;
-                        localStorage.setItem('jan_pro_count', proMessageCount);
-                        updateModelUI();
-                    }
-
-                    if (reply.startsWith('[KNOWLEDGE:')) {
-                        const parts = reply.split(']');
-                        const newInfo = parts[0].replace('[KNOWLEDGE:', '').trim();
-                        updateKnowledge(newInfo);
-                        reply = parts.slice(1).join(']').trim();
-                    }
-
-                    addMsg(reply, 'ai');
-                    chatHistory.push({ role: 'assistant', content: reply });
-                    localStorage.setItem('jan_chat_history', JSON.stringify(chatHistory));
-                }
-            } catch (err) { 
-                addMsg('**Network Error:** ' + err.message, 'ai'); 
-            } finally { 
-                typing.style.display = 'none'; 
-                sendBtn.disabled = false; 
-                chat.scrollTop = chat.scrollHeight; 
-            }
-        }
-
-        function addMsg(text, type, save = true) {
-            const div = document.createElement('div');
-            div.className = 'msg ' + type;
-            div.innerHTML = marked.parse(text);
-            div.querySelectorAll('pre').forEach(pre => {
-                const container = document.createElement('div');
-                container.className = 'code-container';
-                pre.parentNode.insertBefore(container, pre);
-                container.appendChild(pre);
-                const btn = document.createElement('button');
-                btn.className = 'copy-btn'; btn.textContent = 'Copy';
-                btn.onclick = () => { navigator.clipboard.writeText(pre.textContent); btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = 'Copy', 2000); };
-                container.appendChild(btn);
-            });
-            chat.appendChild(div);
-        }
-
-        let matrixInterval;
-        function triggerMatrix() {
-            const c = document.createElement('canvas');
-            c.id = 'matrixCanvas';
-            c.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;background:#000;z-index:10000;';
-            document.body.appendChild(c);
-            const ctx = c.getContext('2d');
-            const resize = () => { c.width = innerWidth; c.height = innerHeight; };
-            resize();
-            window.addEventListener('resize', resize);
-            const cols = Math.floor(c.width / 20) + 1;
-            const yPos = Array(cols).fill(0);
-            const chars = 'アカサタナハマヤラワガザダバパイキシチニヒミリギジヂビピウゥスツヌフムコクヌプエエケセテネヘメレケゼデペォォオコソトノホモヨヨラヂヌドポ';
-            const draw = () => {
-                ctx.fillStyle = 'rgba(0,0,0,0.05)'; ctx.fillRect(0, 0, c.width, c.height);
-                ctx.fillStyle = '#0F0'; ctx.font = '20px monospace';
-                for(let i = 0; i < cols; i++) {
-                    const ch = chars[Math.floor(Math.random() * chars.length)];
-                    ctx.fillText(ch, i * 20, yPos[i] * 20);
-                    if(yPos[i] * 20 > c.height && Math.random() > 0.975) yPos[i] = 0; else yPos[i]++;
-                }
-            };
-            matrixInterval = setInterval(draw, 40);
-            document.getElementById('matrixExitBtn').style.display = 'block';
-            const stopOnEsc = e => { if(e.key === 'Escape') stopMatrix(); };
-            window.addEventListener('keydown', stopOnEsc);
-            window._stopOnEsc = stopOnEsc;
-        }
-
-        function stopMatrix() {
-            clearInterval(matrixInterval);
-            const c = document.getElementById('matrixCanvas');
-            if(c) c.remove();
-            document.getElementById('matrixExitBtn').style.display = 'none';
-            window.removeEventListener('keydown', window._stopOnEsc);
-        }
-
-        input.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = this.scrollHeight + 'px';
-        });
-    </script>
-</body>
-</html>
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
