@@ -6,34 +6,51 @@
     <title>AI</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
-        :root { --bg: #ffffff; --text: #111111; --accent: #0070f3; --gray: #888888; --light-gray: #fafafa; }
+        :root { 
+            --bg: #ffffff; --text: #111111; --accent: #0070f3; 
+            --gray: #888888; --light-gray: #fafafa; --border: #eeeeee;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root { 
+                --bg: #0a0a0a; --text: #ededed; --accent: #0070f3; 
+                --gray: #a0a0a0; --light-gray: #1a1a1a; --border: #333333;
+            }
+        }
+        
         * { box-sizing: border-box; }
         body { 
             font-family: -apple-system, Inter, sans-serif; 
             background: var(--bg); color: var(--text); 
             margin: 0; display: flex; flex-direction: column; height: 100vh; 
+            overflow: hidden; /* Prevent body scroll */
         }
+        
         #chat-container { 
             flex: 1; overflow-y: auto; padding: 40px 20px; 
             max-width: 700px; width: 100%; margin: 0 auto; 
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none;  /* IE and Edge */
         }
+        #chat-container::-webkit-scrollbar { display: none; /* Chrome, Safari, Opera */ }
+
         .msg { margin-bottom: 32px; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
         .role { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--gray); margin-bottom: 8px; }
         .content { font-size: 16px; line-height: 1.6; }
         .content p { margin: 0 0 16px 0; }
-        .content pre { background: var(--light-gray); padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 14px; }
+        .content pre { background: var(--light-gray); padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 14px; border: 1px solid var(--border); }
         .content code { font-family: monospace; background: var(--light-gray); padding: 2px 4px; border-radius: 4px; }
 
         #input-area { 
-            padding: 20px; border-top: 1px solid #eee; 
+            padding: 20px; border-top: 1px solid var(--border); 
             max-width: 700px; width: 100%; margin: 0 auto;
             display: flex; gap: 12px; align-items: center;
+            background: var(--bg);
         }
         input { 
             flex: 1; border: none; outline: none; font-size: 16px; 
-            padding: 12px 0; background: transparent;
+            padding: 12px 0; background: transparent; color: var(--text);
         }
         button { 
             background: var(--text); color: var(--bg); border: none; 
@@ -42,16 +59,11 @@
         }
         button:hover { opacity: 0.8; }
         button:disabled { opacity: 0.3; cursor: not-allowed; }
-
-        /* Hide scrollbar */
-        #chat-container::-webkit-scrollbar { width: 0; }
     </style>
 </head>
 <body>
 
-    <div id="chat-container">
-        <!-- Messages appear here -->
-    </div>
+    <div id="chat-container" id="chat-box"></div>
 
     <div id="input-area">
         <input type="text" id="user-input" placeholder="Ask anything..." autocomplete="off">
@@ -59,17 +71,29 @@
     </div>
 
     <script>
-        const BACKEND_URL = "https://jan-agent-backend-test.onrender.com/chat";
+        const BACKEND_URL = "https://your-app-name.onrender.com/chat";
         const container = document.getElementById('chat-container');
         const input = document.getElementById('user-input');
         const btn = document.getElementById('send-btn');
 
-        function addMessage(role, text) {
+        // Load history from localStorage
+        let history = JSON.parse(localStorage.getItem('chat_history')) || [];
+
+        function renderHistory() {
+            container.innerHTML = '';
+            history.forEach(msg => {
+                const roleLabel = msg.role === 'user' ? 'You' : 'AI';
+                addMessageToDOM(roleLabel, msg.content, false);
+            });
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function addMessageToDOM(role, text, scroll = true) {
             const div = document.createElement('div');
             div.className = 'msg';
             div.innerHTML = `<div class="role">${role}</div><div class="content">${marked.parse(text)}</div>`;
             container.appendChild(div);
-            container.scrollTop = container.scrollHeight;
+            if (scroll) container.scrollTop = container.scrollHeight;
         }
 
         async function send() {
@@ -78,18 +102,26 @@
 
             input.value = '';
             btn.disabled = true;
-            addMessage('You', val);
+            
+            // Update history and DOM
+            history.push({ role: 'user', content: val });
+            localStorage.setItem('chat_history', JSON.stringify(history));
+            addMessageToDOM('You', val);
 
             try {
                 const res = await fetch(BACKEND_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: val })
+                    body: JSON.stringify({ messages: history })
                 });
                 const data = await res.json();
-                addMessage('AI', data.response || `Error: ${data.error}`);
+                const aiResponse = data.response || `Error: ${data.error}`;
+                
+                history.push({ role: 'assistant', content: aiResponse });
+                localStorage.setItem('chat_history', JSON.stringify(history));
+                addMessageToDOM('AI', aiResponse);
             } catch (e) {
-                addMessage('AI', 'Error: Could not connect to server.');
+                addMessageToDOM('AI', 'Error: Could not connect to server.');
             } finally {
                 btn.disabled = false;
                 input.focus();
@@ -98,6 +130,9 @@
 
         btn.onclick = send;
         input.onkeypress = (e) => { if (e.key === 'Enter') send(); };
+
+        // Initial render
+        renderHistory();
     </script>
 </body>
 </html>
