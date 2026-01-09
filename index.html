@@ -120,7 +120,7 @@
             <text x="50" y="75" font-size="70" font-weight="bold" text-anchor="middle" fill="#555" font-family="Arial">J</text>
         </svg>
         <h1>Jan Agent</h1>
-        <div class="version">v0.5.1-beta</div>
+        <div class="version">v0.5.2-beta</div>
     </header>
 
     <main>
@@ -163,14 +163,10 @@
     </footer>
 
     <script>
-        // Obfuscated API URL logic - updated to handle potential environment differences
         const _0x4a2b = ['chat', 'onrender', 'test', 'backend', 'agent', 'jan', 'https://', '.', '-', 'com'];
         const getApiUrl = () => {
-            // If running locally or on a custom domain, you might want to use a relative path or environment variable
-            // For now, keeping the user's original logic but making it more robust
             const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
             if (isLocal) return '/chat';
-            
             return _0x4a2b[6] + _0x4a2b[5] + _0x4a2b[8] + _0x4a2b[4] + _0x4a2b[8] + _0x4a2b[3] + _0x4a2b[8] + _0x4a2b[2] + _0x4a2b[7] + _0x4a2b[1] + _0x4a2b[7] + _0x4a2b[9] + '/' + _0x4a2b[0];
         };
 
@@ -191,10 +187,21 @@
             updateModelUI();
         };
 
+        // Enter to send logic for non-touchscreen devices
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                // Check if it's a touchscreen device
+                const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+                if (!isTouchDevice) {
+                    e.preventDefault();
+                    send();
+                }
+            }
+        });
+
         function switchModel(model) {
             if (currentModel !== model) {
                 currentModel = model;
-                // Start new chat on model switch
                 chatHistory = [];
                 localStorage.removeItem('jan_chat_history');
                 renderHistory();
@@ -281,7 +288,10 @@
             chatHistory.push({ role: 'user', content: msg });
             localStorage.setItem('jan_chat_history', JSON.stringify(chatHistory));
 
-            input.value = ''; sendBtn.disabled = true; typing.style.display = 'block';
+            input.value = ''; 
+            input.style.height = 'auto';
+            sendBtn.disabled = true; 
+            typing.style.display = 'block';
             chat.scrollTop = chat.scrollHeight;
 
             try {
