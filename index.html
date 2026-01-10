@@ -3,16 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI</title>
+    <title>Jan Agent</title>
     <style>
         :root { 
             --bg: #ffffff; --text: #111111; --accent: #0070f3; 
             --gray: #888888; --light-gray: #fafafa; --border: #eeeeee;
+            --silver-gradient: linear-gradient(135deg, #d1d1d1 0%, #7a7a7a 100%);
         }
         @media (prefers-color-scheme: dark) {
             :root { 
                 --bg: #0a0a0a; --text: #ededed; --accent: #0070f3; 
                 --gray: #a0a0a0; --light-gray: #1a1a1a; --border: #333333;
+                --silver-gradient: linear-gradient(135deg, #e0e0e0 0%, #888888 100%);
             }
         }
         
@@ -24,6 +26,51 @@
             background: var(--bg); color: var(--text); 
             display: flex; flex-direction: column; 
         }
+
+        #header {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 700px;
+            width: 100%;
+            margin: 0 auto;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 20px;
+            border-radius: 8px;
+            background: var(--silver-gradient);
+            color: white;
+            user-select: none;
+        }
+
+        .brand-name {
+            font-weight: 600;
+            font-size: 16px;
+            letter-spacing: -0.5px;
+        }
+
+        .model-version {
+            font-size: 10px;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
         
         #chat-container { 
             flex: 1; 
@@ -34,12 +81,10 @@
             margin: 0 auto; 
             scrollbar-width: none;
             -ms-overflow-style: none;
-            display: flex;
-            flex-direction: column;
         }
         #chat-container::-webkit-scrollbar { display: none; }
 
-        .msg { margin-bottom: 32px; animation: fadeIn 0.3s ease; width: 100%; flex-shrink: 0; }
+        .msg { margin-bottom: 32px; animation: fadeIn 0.3s ease; width: 100%; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
         .role { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--gray); margin-bottom: 8px; }
@@ -83,6 +128,14 @@
 </head>
 <body>
 
+    <div id="header">
+        <div class="logo-container">
+            <div class="logo">J</div>
+            <div class="brand-name">Jan Agent</div>
+        </div>
+        <div class="model-version">Model 1.0</div>
+    </div>
+
     <div id="chat-container"></div>
 
     <div id="bottom-bar">
@@ -95,7 +148,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
-        const BACKEND_URL = "https://jan-agent-backend-test.onrender.com/chat";
+        const BACKEND_URL = "https://your-app-name.onrender.com/chat";
         
         const container = document.getElementById('chat-container');
         const input = document.getElementById('user-input');
@@ -112,27 +165,27 @@
             }
         }
 
-        function addMessageToDOM(role, text, scroll = true) {
+        function addMessageToDOM(role, text) {
             const div = document.createElement('div');
             div.className = 'msg';
-            const roleLabel = role === 'user' ? 'You' : 'AI';
+            const roleLabel = role === 'user' ? 'You' : 'Jan Agent';
             div.innerHTML = `<div class="role">${roleLabel}</div><div class="content">${safeMarked(text)}</div>`;
             container.appendChild(div);
-            if (scroll) {
-                // Use requestAnimationFrame for smoother scrolling
-                requestAnimationFrame(() => {
-                    container.scrollTop = container.scrollHeight;
-                });
-            }
+            container.scrollTop = container.scrollHeight;
+            return div.querySelector('.content');
         }
 
         function renderHistory() {
             container.innerHTML = '';
             if (history.length === 0) {
-                addMessageToDOM('assistant', 'Hello. How can I help you today?', false);
+                addMessageToDOM('assistant', 'Hello. I am Jan Agent. How can I help you today?');
             } else {
                 history.forEach(msg => {
-                    addMessageToDOM(msg.role, msg.content, false);
+                    const div = document.createElement('div');
+                    div.className = 'msg';
+                    const roleLabel = msg.role === 'user' ? 'You' : 'Jan Agent';
+                    div.innerHTML = `<div class="role">${roleLabel}</div><div class="content">${safeMarked(msg.content)}</div>`;
+                    container.appendChild(div);
                 });
             }
             container.scrollTop = container.scrollHeight;
@@ -149,20 +202,34 @@
             localStorage.setItem('chat_history', JSON.stringify(history));
             addMessageToDOM('user', val);
 
+            const aiContentDiv = addMessageToDOM('assistant', '');
+            let fullAiResponse = "";
+
             try {
-                const res = await fetch(BACKEND_URL, {
+                const response = await fetch(BACKEND_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ messages: history })
                 });
-                const data = await res.json();
-                const aiResponse = data.response || `Error: ${data.error}`;
-                
-                history.push({ role: 'assistant', content: aiResponse });
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    const chunk = decoder.decode(value, { stream: true });
+                    fullAiResponse += chunk;
+                    aiContentDiv.innerHTML = safeMarked(fullAiResponse);
+                    container.scrollTop = container.scrollHeight;
+                }
+
+                history.push({ role: 'assistant', content: fullAiResponse });
                 localStorage.setItem('chat_history', JSON.stringify(history));
-                addMessageToDOM('assistant', aiResponse);
+
             } catch (e) {
-                addMessageToDOM('assistant', 'Error: Could not connect to server.');
+                aiContentDiv.innerHTML = 'Error: Could not connect to server.';
             } finally {
                 btn.disabled = false;
                 input.focus();
