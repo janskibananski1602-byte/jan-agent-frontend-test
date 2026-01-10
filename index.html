@@ -87,7 +87,6 @@
         .content { font-size: 16px; line-height: 1.6; word-wrap: break-word; }
         .content p { margin: 0 0 12px 0; }
         
-        /* Code block container for copy button positioning */
         .code-wrapper { position: relative; margin: 12px 0; }
         .content pre { background: var(--light-gray); padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 14px; border: 1px solid var(--border); margin: 0; }
         .content code { font-family: monospace; background: var(--light-gray); padding: 2px 4px; border-radius: 4px; }
@@ -106,8 +105,8 @@
             cursor: pointer;
             opacity: 0.8;
             text-transform: uppercase;
+            z-index: 5;
         }
-        .copy-btn:active { opacity: 1; background: var(--light-gray); }
 
         #bottom-bar {
             border-top: 1px solid var(--border);
@@ -181,40 +180,47 @@
 
         let history = JSON.parse(localStorage.getItem('chat_history')) || [];
 
-        function safeMarked(text) {
-            try {
-                if (typeof marked === 'undefined') return text.replace(/\n/g, '<br>');
-                
-                // Custom renderer to wrap pre tags in a div with a copy button
-                const renderer = new marked.Renderer();
-                renderer.code = function(code, language) {
-                    const escapedCode = code.replace(/"/g, '&quot;');
-                    return `
-                        <div class="code-wrapper">
-                            <button class="copy-btn" onclick="copyToClipboard(this, \`${escapedCode}\`)">Copy</button>
-                            <pre><code>${code}</code></pre>
-                        </div>
-                    `;
-                };
-                return marked.parse(text, { renderer: renderer });
-            } catch (e) {
-                return text;
-            }
-        }
+        // Configure marked
+        marked.setOptions({
+            breaks: true,
+            gfm: true
+        });
 
-        function copyToClipboard(btn, text) {
-            navigator.clipboard.writeText(text).then(() => {
-                const originalText = btn.innerText;
-                btn.innerText = 'Copied!';
-                setTimeout(() => { btn.innerText = originalText; }, 2000);
-            });
+        function parseMarkdown(text) {
+            try {
+                let html = marked.parse(text);
+                // Post-process to add copy buttons to code blocks
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = html;
+                const preBlocks = tempDiv.querySelectorAll('pre');
+                preBlocks.forEach(pre => {
+                    const code = pre.innerText;
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'code-wrapper';
+                    const copyBtn = document.createElement('button');
+                    copyBtn.className = 'copy-btn';
+                    copyBtn.innerText = 'Copy';
+                    copyBtn.onclick = () => {
+                        navigator.clipboard.writeText(code).then(() => {
+                            copyBtn.innerText = 'Copied!';
+                            setTimeout(() => { copyBtn.innerText = 'Copy'; }, 2000);
+                        });
+                    };
+                    pre.parentNode.insertBefore(wrapper, pre);
+                    wrapper.appendChild(copyBtn);
+                    wrapper.appendChild(pre);
+                });
+                return tempDiv.innerHTML;
+            } catch (e) {
+                return text.replace(/\n/g, '<br>');
+            }
         }
 
         function addMessageToDOM(role, text) {
             const div = document.createElement('div');
             div.className = 'msg';
             const roleLabel = role === 'user' ? 'You' : 'Jan Agent';
-            div.innerHTML = `<div class="role">${roleLabel}</div><div class="content">${safeMarked(text)}</div>`;
+            div.innerHTML = `<div class="role">${roleLabel}</div><div class="content">${parseMarkdown(text)}</div>`;
             container.appendChild(div);
             container.scrollTop = container.scrollHeight;
             return div.querySelector('.content');
@@ -229,7 +235,7 @@
                     const div = document.createElement('div');
                     div.className = 'msg';
                     const roleLabel = msg.role === 'user' ? 'You' : 'Jan Agent';
-                    div.innerHTML = `<div class="role">${roleLabel}</div><div class="content">${safeMarked(msg.content)}</div>`;
+                    div.innerHTML = `<div class="role">${roleLabel}</div><div class="content">${parseMarkdown(msg.content)}</div>`;
                     container.appendChild(div);
                 });
             }
@@ -266,7 +272,7 @@
                     
                     const chunk = decoder.decode(value, { stream: true });
                     fullAiResponse += chunk;
-                    aiContentDiv.innerHTML = safeMarked(fullAiResponse);
+                    aiContentDiv.innerHTML = parseMarkdown(fullAiResponse);
                     container.scrollTop = container.scrollHeight;
                 }
 
