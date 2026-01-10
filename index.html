@@ -135,6 +135,18 @@
             font-weight: 600;
         }
 
+        /* URL Mode Toggle Styling */
+        #mode-toggle {
+            font-size: 10px;
+            color: var(--gray);
+            cursor: pointer;
+            padding: 4px 8px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            user-select: none;
+        }
+        #mode-toggle:hover { background: var(--light-gray); }
+
         @media (min-width: 1024px) {
             #chat-container { padding: 40px 0; }
             #header { padding: 20px 40px; }
@@ -149,7 +161,10 @@
             <div class="logo">J</div>
             <div class="brand-name">Jan Agent</div>
         </div>
-        <div class="model-version">Model 1.0</div>
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <div id="mode-toggle" onclick="toggleUrlMode()">Mode: Hidden</div>
+            <div class="model-version">Model 1.0</div>
+        </div>
     </div>
 
     <div id="chat-container"></div>
@@ -172,15 +187,26 @@
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
-        /**
-         * SECURITY NOTE: 
-         * GitHub Pages is a static host and does not support server-side proxies.
-         * To "hide" the URL from casual users, we use Base64 obfuscation.
-         * Note: A determined user can still find the URL in the Network tab.
-         */
-        const _0x4a2b = "aHR0cHM6Ly9qYW4tYWdlbnQtYmFja2VuZC10ZXN0Lm9ucmVuZGVyLmNvbS9jaGF0";
-        const BACKEND_URL = atob(_0x4a2b);
+        // Configuration
+        const DIRECT_URL = "https://jan-agent-backend-test.onrender.com/chat";
+        const OBFUSCATED_URL = "aHR0cHM6Ly9qYW4tYWdlbnQtYmFja2VuZC10ZXN0Lm9ucmVuZGVyLmNvbS9jaGF0";
         
+        let isHiddenMode = localStorage.getItem('url_mode') !== 'normal';
+        
+        function getBackendUrl() {
+            return isHiddenMode ? atob(OBFUSCATED_URL) : DIRECT_URL;
+        }
+
+        function toggleUrlMode() {
+            isHiddenMode = !isHiddenMode;
+            localStorage.setItem('url_mode', isHiddenMode ? 'hidden' : 'normal');
+            document.getElementById('mode-toggle').innerText = `Mode: ${isHiddenMode ? 'Hidden' : 'Normal'}`;
+            alert(`Switched to ${isHiddenMode ? 'Hidden' : 'Normal'} mode. URL is now ${isHiddenMode ? 'obfuscated' : 'direct'}.`);
+        }
+
+        // Initialize toggle text
+        document.getElementById('mode-toggle').innerText = `Mode: ${isHiddenMode ? 'Hidden' : 'Normal'}`;
+
         const container = document.getElementById('chat-container');
         const input = document.getElementById('user-input');
         const btn = document.getElementById('send-btn');
@@ -320,7 +346,7 @@
             const aiContentDiv = addMessageToDOM('assistant', '');
             let fullAiResponse = "";
             try {
-                const response = await fetch(BACKEND_URL, {
+                const response = await fetch(getBackendUrl(), {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json'
