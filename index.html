@@ -118,39 +118,30 @@
         
         #preview-container {
             display: none; padding: 10px; border-top: 1px solid var(--border);
-            max-width: 800px; margin: 0 auto; gap: 10px; overflow-x: auto;
+            max-width: 800px; margin: 0 auto; gap: 10px; overflow-x: auto; flex-wrap: wrap;
         }
         .preview-item {
+            position: relative; display: inline-block; margin: 5px;
+        }
+        .preview-thumb {
             width: 60px; height: 60px; border-radius: 8px; object-fit: cover;
-            border: 1px solid var(--border); position: relative;
+            border: 1px solid var(--border);
+        }
+        .preview-file {
+            width: 60px; height: 60px; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--light-gray);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; color: var(--gray);
         }
         .remove-preview {
             position: absolute; top: -5px; right: -5px; background: red;
             color: white; border-radius: 50%; width: 18px; height: 18px;
             font-size: 12px; display: flex; align-items: center; justify-content: center;
-            cursor: pointer;
+            cursor: pointer; font-weight: bold;
         }
         #cooldown-timer {
             font-size: 12px; color: var(--gray); margin-left: 10px; display: none;
             font-weight: 600;
-        }
-
-        #memory-panel {
-            position: fixed; right: -300px; top: 0; width: 300px; height: 100%;
-            background: var(--bg); border-left: 1px solid var(--border);
-            transition: right 0.3s ease; z-index: 200; padding: 20px;
-            overflow-y: auto;
-        }
-        #memory-panel.open { right: 0; }
-        .memory-item { 
-            padding: 8px 0; border-bottom: 1px solid var(--border);
-            font-size: 13px;
-        }
-        .memory-key { color: var(--gray); font-weight: 600; }
-        .memory-value { margin-top: 4px; }
-        .close-memory {
-            cursor: pointer; font-size: 24px; float: right;
-            color: var(--gray);
         }
 
         @media (min-width: 1024px) {
@@ -173,19 +164,11 @@
     <div id="chat-container"></div>
     <div id="preview-container"></div>
 
-    <div id="memory-panel">
-        <span class="close-memory" onclick="toggleMemory()">×</span>
-        <h3 style="margin-top: 0;">What I Remember</h3>
-        <div id="memory-content"></div>
-        <button class="btn" style="margin-top: 20px; width: 100%;" onclick="clearMemory()">Clear Memory</button>
-    </div>
-
     <div id="bottom-bar">
         <div id="input-area">
             <div id="attachment-menu">
-                <div class="menu-item" onclick="triggerFile()">Attach Image</div>
-                <div class="menu-item" onclick="toggleMemory()">View Memory</div>
-                <div class="menu-item" onclick="clearChat()" style="color: #ff4444;">Clear Chat</div>
+                <div class="menu-item" onclick="triggerFile()">📎 Attach</div>
+                <div class="menu-item" onclick="clearChat()" style="color: #ff4444;">🗑️ Clear Chat</div>
             </div>
             <button id="plus-btn" onclick="toggleMenu()">+</button>
             <input type="text" id="user-input" placeholder="Ask anything..." autocomplete="off">
@@ -194,21 +177,17 @@
         </div>
     </div>
 
-    <input type="file" id="file-input" style="display:none" accept="image/*" onchange="handleFile(this)">
+    <input type="file" id="file-input" style="display:none" multiple onchange="handleFiles(this)">
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
         const BACKEND_URL = "https://jan-agent-backend-test.onrender.com/chat";
-        const SECRET_KEY = "JAN_AGENT_2026";
-        
         const container = document.getElementById('chat-container');
         const input = document.getElementById('user-input');
         const btn = document.getElementById('send-btn');
         const menu = document.getElementById('attachment-menu');
         const preview = document.getElementById('preview-container');
         const timerDisplay = document.getElementById('cooldown-timer');
-        const memoryPanel = document.getElementById('memory-panel');
-        const memoryContent = document.getElementById('memory-content');
         
         let history = JSON.parse(localStorage.getItem('chat_history')) || [];
         let currentFiles = [];
@@ -217,59 +196,26 @@
         marked.setOptions({ breaks: true, gfm: true });
 
         function toggleMenu() { menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex'; }
-        
-        function toggleMemory() {
-            memoryPanel.classList.toggle('open');
-            if (memoryPanel.classList.contains('open')) loadMemory();
-            toggleMenu();
-        }
-
-        async function loadMemory() {
-            try {
-                const res = await fetch(BACKEND_URL.replace('/chat', '/memory'), {
-                    headers: { 'X-Secret-Key': SECRET_KEY }
-                });
-                const memory = await res.json();
-                
-                if (Object.keys(memory).length === 0) {
-                    memoryContent.innerHTML = '<p style="color: var(--gray); font-size: 13px;">No memories yet. Start chatting!</p>';
-                } else {
-                    memoryContent.innerHTML = Object.entries(memory).map(([k, v]) => 
-                        `<div class="memory-item"><div class="memory-key">${k}</div><div class="memory-value">${v}</div></div>`
-                    ).join('');
-                }
-            } catch (e) {
-                memoryContent.innerHTML = '<p style="color: red;">Failed to load memory</p>';
-            }
-        }
-
-        async function clearMemory() {
-            if (!confirm('Clear all memories?')) return;
-            try {
-                await fetch(BACKEND_URL.replace('/chat', '/memory'), {
-                    method: 'DELETE',
-                    headers: { 'X-Secret-Key': SECRET_KEY }
-                });
-                loadMemory();
-            } catch (e) {
-                alert('Failed to clear memory');
-            }
-        }
-        
         function triggerFile() { 
             document.getElementById('file-input').click();
             toggleMenu();
         }
 
-        function handleFile(input) {
-            const file = input.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                currentFiles.push({ name: file.name, type: file.type, data: e.target.result });
-                renderPreviews();
-            };
-            reader.readAsDataURL(file);
+        function handleFiles(input) {
+            Array.from(input.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    currentFiles.push({ 
+                        name: file.name, 
+                        type: file.type, 
+                        data: e.target.result,
+                        isImage: file.type.startsWith('image/'),
+                        isVideo: file.type.startsWith('video/')
+                    });
+                    renderPreviews();
+                };
+                reader.readAsDataURL(file);
+            });
             input.value = '';
         }
 
@@ -278,8 +224,24 @@
             preview.style.display = currentFiles.length ? 'flex' : 'none';
             currentFiles.forEach((f, i) => {
                 const div = document.createElement('div');
-                div.style.position = 'relative';
-                div.innerHTML = `<img src="${f.data}" class="preview-item"><div class="remove-preview" onclick="removeFile(${i})">×</div>`;
+                div.className = 'preview-item';
+                
+                if (f.isImage) {
+                    div.innerHTML = `
+                        <img src="${f.data}" class="preview-thumb" title="${f.name}">
+                        <div class="remove-preview" onclick="removeFile(${i})">×</div>
+                    `;
+                } else if (f.isVideo) {
+                    div.innerHTML = `
+                        <video src="${f.data}" class="preview-thumb" title="${f.name}"></video>
+                        <div class="remove-preview" onclick="removeFile(${i})">×</div>
+                    `;
+                } else {
+                    div.innerHTML = `
+                        <div class="preview-file" title="${f.name}">📄</div>
+                        <div class="remove-preview" onclick="removeFile(${i})">×</div>
+                    `;
+                }
                 preview.appendChild(div);
             });
         }
@@ -313,7 +275,7 @@
             let seconds = 5;
             if (responseLength > 1000) seconds = 60;
             else if (responseLength > 500) seconds = 30;
-            else if (responseLength > 100) seconds = 10;
+            else if (responseLength > 200) seconds = 10;
             
             cooldownEnd = Date.now() + (seconds * 1000);
             localStorage.setItem('cooldown_end', cooldownEnd);
@@ -325,7 +287,7 @@
                 let html = marked.parse(text);
                 const tempDiv = document.createElement('div');
                 tempDiv.innerHTML = html;
-                tempDiv.querySelectorAll('pre').forEach((pre, idx) => {
+                tempDiv.querySelectorAll('pre').forEach(pre => {
                     const code = pre.innerText;
                     const wrapper = document.createElement('div');
                     wrapper.className = 'code-wrapper';
@@ -372,7 +334,18 @@
             
             const userMsg = { role: 'user', content: [] };
             if (val) userMsg.content.push({ type: 'text', text: val });
-            currentFiles.forEach(f => { userMsg.content.push({ type: 'image_url', image_url: { url: f.data } }); });
+            
+            currentFiles.forEach(f => {
+                if (f.isImage) {
+                    userMsg.content.push({ type: 'image_url', image_url: { url: f.data } });
+                } else {
+                    if (!userMsg.content.some(c => c.type === 'text')) {
+                        userMsg.content.push({ type: 'text', text: `[File attached: ${f.name}]` });
+                    } else {
+                        userMsg.content[0].text += `\n[File attached: ${f.name}]`;
+                    }
+                }
+            });
             
             input.value = '';
             currentFiles = [];
@@ -388,10 +361,7 @@
             try {
                 const response = await fetch(BACKEND_URL, {
                     method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'X-Secret-Key': SECRET_KEY
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ messages: history })
                 });
 
@@ -402,6 +372,7 @@
 
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
+                
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;
@@ -414,7 +385,7 @@
                 localStorage.setItem('chat_history', JSON.stringify(history));
                 setCooldown(fullAiResponse.length);
             } catch (e) { 
-                aiContentDiv.innerHTML = `Error: ${e.message}`; 
+                aiContentDiv.innerHTML = `<span style="color: #ff4444;">Error: ${e.message}</span>`; 
             }
         }
 
