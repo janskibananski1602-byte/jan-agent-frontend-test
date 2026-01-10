@@ -172,7 +172,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
-        // Ensure the URL is exactly as provided, without extra slashes or encryption that might break it
         const BACKEND_URL = "https://jan-agent-backend-test.onrender.com/chat";
         const container = document.getElementById('chat-container');
         const input = document.getElementById('user-input');
@@ -318,7 +317,7 @@
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
-                        'X-Requested-With': 'JanAgent' // This must match the backend check
+                        'X-Requested-With': 'JanAgent'
                     },
                     body: JSON.stringify({ messages: history })
                 });
@@ -327,6 +326,7 @@
                     const errorData = await response.json();
                     throw new Error(errorData.error || `Server error: ${response.status}`);
                 }
+
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
                 while (true) {
@@ -339,7 +339,9 @@
                 history.push({ role: 'assistant', content: fullAiResponse });
                 localStorage.setItem('chat_history', JSON.stringify(history));
                 setCooldown(fullAiResponse.length);
-            } catch (e) { aiContentDiv.innerHTML = 'Error: Connection failed.'; }
+            } catch (e) { 
+                aiContentDiv.innerHTML = `Error: ${e.message}`; 
+            }
         }
 
         btn.onclick = send;
