@@ -172,8 +172,15 @@
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
-        // Using a relative path to hide the actual backend URL from the client-side code.
-        const BACKEND_URL = "/api/chat";
+        /**
+         * SECURITY NOTE: 
+         * GitHub Pages is a static host and does not support server-side proxies.
+         * To "hide" the URL from casual users, we use Base64 obfuscation.
+         * Note: A determined user can still find the URL in the Network tab.
+         */
+        const _0x4a2b = "aHR0cHM6Ly9qYW4tYWdlbnQtYmFja2VuZC10ZXN0Lm9ucmVuZGVyLmNvbS9jaGF0";
+        const BACKEND_URL = atob(_0x4a2b);
+        
         const container = document.getElementById('chat-container');
         const input = document.getElementById('user-input');
         const btn = document.getElementById('send-btn');
