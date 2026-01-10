@@ -173,6 +173,7 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
         const BACKEND_URL = "https://jan-agent-backend-test.onrender.com/chat";
+        const SECRET_KEY = "JAN_AGENT_2026"; // Must match the backend SECRET_KEY
         
         const container = document.getElementById('chat-container');
         const input = document.getElementById('user-input');
@@ -316,7 +317,8 @@
                 const response = await fetch(BACKEND_URL, {
                     method: 'POST',
                     headers: { 
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'X-Secret-Key': SECRET_KEY // Send the secret key for verification
                     },
                     body: JSON.stringify({ messages: history })
                 });
