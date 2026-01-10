@@ -316,8 +316,7 @@
                 const response = await fetch(BACKEND_URL, {
                     method: 'POST',
                     headers: { 
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'JanAgent'
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ messages: history })
                 });
