@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Jan Agent</title>
     <style>
         :root { 
@@ -18,36 +18,35 @@
             }
         }
         
-        * { box-sizing: border-box; }
-        html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; position: fixed; width: 100%; }
         
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
             background: var(--bg); color: var(--text); 
             display: flex; flex-direction: column; 
-            -webkit-font-smoothing: antialiased;
         }
 
         #header {
-            padding: 24px 40px;
+            padding: 16px 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             width: 100%;
             border-bottom: 1px solid var(--border);
             background: var(--bg);
-            z-index: 10;
+            flex-shrink: 0;
         }
 
         .logo-container {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
         .logo {
             font-weight: 900;
-            font-size: 28px;
+            font-size: 24px;
             background: var(--silver-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -57,82 +56,78 @@
 
         .brand-name {
             font-weight: 600;
-            font-size: 18px;
+            font-size: 16px;
             letter-spacing: -0.5px;
         }
 
         .model-version {
-            font-size: 11px;
+            font-size: 10px;
             color: var(--gray);
             text-transform: uppercase;
-            letter-spacing: 1.5px;
+            letter-spacing: 1px;
             font-weight: 700;
         }
         
         #chat-container { 
             flex: 1; 
             overflow-y: auto; 
-            padding: 60px 40px; 
+            padding: 20px; 
             width: 100%; 
-            max-width: 900px; /* Wider for desktop */
+            max-width: 800px; 
             margin: 0 auto; 
             scrollbar-width: none;
             -ms-overflow-style: none;
         }
         #chat-container::-webkit-scrollbar { display: none; }
 
-        .msg { margin-bottom: 48px; animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); width: 100%; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .msg { margin-bottom: 32px; animation: fadeIn 0.3s ease; width: 100%; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        .role { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--gray); margin-bottom: 12px; }
-        .content { font-size: 17px; line-height: 1.7; word-wrap: break-word; }
-        .content p { margin: 0 0 16px 0; }
-        .content pre { background: var(--light-gray); padding: 20px; border-radius: 12px; overflow-x: auto; font-size: 14px; border: 1px solid var(--border); margin: 20px 0; }
-        .content code { font-family: 'SFMono-Regular', Consolas, monospace; background: var(--light-gray); padding: 3px 6px; border-radius: 4px; font-size: 0.9em; }
+        .role { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--gray); margin-bottom: 8px; }
+        .content { font-size: 16px; line-height: 1.6; word-wrap: break-word; }
+        .content p { margin: 0 0 12px 0; }
+        .content pre { background: var(--light-gray); padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 14px; border: 1px solid var(--border); margin: 12px 0; }
+        .content code { font-family: monospace; background: var(--light-gray); padding: 2px 4px; border-radius: 4px; }
 
         #bottom-bar {
             border-top: 1px solid var(--border);
             background: var(--bg);
-            padding: 32px 40px;
+            padding: 16px 20px 32px 20px; /* Extra bottom padding for mobile safe area */
             width: 100%;
             flex-shrink: 0;
         }
 
         #input-area { 
-            max-width: 900px; 
+            max-width: 800px; 
             margin: 0 auto;
             display: flex; 
-            gap: 20px; 
+            gap: 12px; 
             align-items: center;
         }
 
         input { 
-            flex: 1; border: none; outline: none; font-size: 17px; 
-            padding: 12px 0; background: transparent; color: var(--text);
-            font-family: inherit;
+            flex: 1; border: none; outline: none; font-size: 16px; 
+            padding: 10px 0; background: transparent; color: var(--text);
         }
         
         .btn { 
             background: var(--text); color: var(--bg); border: none; 
-            padding: 10px 24px; border-radius: 8px; cursor: pointer; 
-            font-weight: 600; font-size: 14px; transition: all 0.2s ease;
+            padding: 10px 20px; border-radius: 8px; cursor: pointer; 
+            font-weight: 600; font-size: 14px;
             white-space: nowrap;
         }
-        .btn:hover { opacity: 0.8; transform: translateY(-1px); }
-        .btn:active { transform: translateY(0); }
         .btn:disabled { opacity: 0.3; cursor: not-allowed; }
         
         #clear-btn { 
             background: transparent; color: var(--gray); 
-            padding: 10px; font-size: 12px; font-weight: 500;
+            padding: 10px 0; font-size: 12px; font-weight: 500;
         }
-        #clear-btn:hover { color: var(--text); }
 
         /* Desktop specific tweaks */
         @media (min-width: 1024px) {
-            #chat-container { padding: 80px 0; }
-            #header { padding: 32px 80px; }
-            #bottom-bar { padding: 40px 80px; }
+            #chat-container { padding: 40px 0; }
+            #header { padding: 20px 40px; }
+            #bottom-bar { padding: 24px 40px; }
         }
     </style>
 </head>
