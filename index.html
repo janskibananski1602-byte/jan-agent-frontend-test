@@ -158,7 +158,7 @@
     <div id="bottom-bar">
         <div id="input-area">
             <div id="attachment-menu">
-                <div class="menu-item" onclick="triggerFile('*/*')">Attach File</div>
+                <div class="menu-item" onclick="triggerFile('*/*')">Attach</div>
                 <div class="menu-item" onclick="clearChat()" style="color: #ff4444;">Clear Chat</div>
             </div>
             <button id="plus-btn" onclick="toggleMenu()">+</button>
@@ -172,6 +172,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
+        // Ensure the URL is exactly as provided, without extra slashes or encryption that might break it
         const BACKEND_URL = "https://jan-agent-backend-test.onrender.com/chat";
         const container = document.getElementById('chat-container');
         const input = document.getElementById('user-input');
@@ -317,10 +318,15 @@
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
-                        'X-Requested-With': 'JanAgent'
+                        'X-Requested-With': 'JanAgent' // This must match the backend check
                     },
                     body: JSON.stringify({ messages: history })
                 });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `Server error: ${response.status}`);
+                }
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
                 while (true) {
