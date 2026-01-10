@@ -132,6 +132,13 @@
         }
         #cooldown-timer {
             font-size: 12px; color: var(--gray); margin-left: 10px; display: none;
+            font-weight: 600;
+        }
+
+        @media (min-width: 1024px) {
+            #chat-container { padding: 40px 0; }
+            #header { padding: 20px 40px; }
+            #bottom-bar { padding: 24px 40px; }
         }
     </style>
 </head>
@@ -176,6 +183,8 @@
         let history = JSON.parse(localStorage.getItem('chat_history')) || [];
         let currentFiles = [];
         let cooldownEnd = parseInt(localStorage.getItem('cooldown_end')) || 0;
+
+        marked.setOptions({ breaks: true, gfm: true });
 
         function toggleMenu() { menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex'; }
         function triggerFile(type) { 
@@ -244,7 +253,29 @@
         }
 
         function parseMarkdown(text) {
-            try { return marked.parse(text); } catch (e) { return text; }
+            try {
+                let html = marked.parse(text);
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = html;
+                tempDiv.querySelectorAll('pre').forEach(pre => {
+                    const code = pre.innerText;
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'code-wrapper';
+                    const copyBtn = document.createElement('button');
+                    copyBtn.className = 'copy-btn';
+                    copyBtn.innerText = 'Copy';
+                    copyBtn.onclick = () => {
+                        navigator.clipboard.writeText(code).then(() => {
+                            copyBtn.innerText = 'Copied!';
+                            setTimeout(() => { copyBtn.innerText = 'Copy'; }, 2000);
+                        });
+                    };
+                    pre.parentNode.insertBefore(wrapper, pre);
+                    wrapper.appendChild(copyBtn);
+                    wrapper.appendChild(pre);
+                });
+                return tempDiv.innerHTML;
+            } catch (e) { return text.replace(/\n/g, '<br>'); }
         }
 
         function addMessageToDOM(role, text) {
@@ -286,7 +317,7 @@
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
-                        'X-Requested-With': 'JanAgent' // Security header
+                        'X-Requested-With': 'JanAgent'
                     },
                     body: JSON.stringify({ messages: history })
                 });
@@ -307,10 +338,7 @@
 
         btn.onclick = send;
         input.onkeypress = (e) => { if (e.key === 'Enter' && !btn.disabled) send(); };
-        window.onload = () => {
-            renderHistory();
-            checkCooldown();
-        };
+        window.onload = () => { renderHistory(); checkCooldown(); };
     </script>
 </body>
 </html>
