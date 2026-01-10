@@ -38,19 +38,13 @@
             flex-shrink: 0;
         }
 
-        .logo-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
+        .logo-container { display: flex; align-items: center; gap: 10px; }
         .logo {
             font-weight: 900; font-size: 24px;
             background: var(--silver-gradient);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             user-select: none; line-height: 1;
         }
-
         .brand-name { font-weight: 600; font-size: 16px; letter-spacing: -0.5px; }
         .model-version { font-size: 10px; color: var(--gray); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
         
@@ -97,7 +91,7 @@
             background: var(--bg); border: 1px solid var(--border);
             border-radius: 12px; padding: 8px; display: none;
             flex-direction: column; gap: 4px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            z-index: 100;
+            z-index: 100; min-width: 160px;
         }
         .menu-item {
             padding: 10px 16px; font-size: 14px; cursor: pointer;
@@ -114,7 +108,13 @@
         }
         .btn:disabled { opacity: 0.3; cursor: not-allowed; }
         
-        #plus-btn { background: transparent; color: var(--text); font-size: 24px; padding: 0 10px; font-weight: 300; }
+        #plus-btn { 
+            background: var(--text); color: var(--bg); 
+            width: 32px; height: 32px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; font-weight: 300; border: none; cursor: pointer;
+            flex-shrink: 0;
+        }
         
         #preview-container {
             display: none; padding: 10px; border-top: 1px solid var(--border);
@@ -130,6 +130,9 @@
             font-size: 12px; display: flex; align-items: center; justify-content: center;
             cursor: pointer;
         }
+        #cooldown-timer {
+            font-size: 12px; color: var(--gray); margin-left: 10px; display: none;
+        }
     </style>
 </head>
 <body>
@@ -143,17 +146,17 @@
     </div>
 
     <div id="chat-container"></div>
-
     <div id="preview-container"></div>
 
     <div id="bottom-bar">
         <div id="input-area">
             <div id="attachment-menu">
-                <div class="menu-item" onclick="triggerFile('image/*')">🖼️ Image</div>
-                <div class="menu-item" onclick="triggerFile('video/*')">🎥 Video</div>
+                <div class="menu-item" onclick="triggerFile('*/*')">📎 Attach File</div>
+                <div class="menu-item" onclick="clearChat()" style="color: #ff4444;">🗑️ Clear Chat</div>
             </div>
             <button id="plus-btn" onclick="toggleMenu()">+</button>
             <input type="text" id="user-input" placeholder="Ask anything..." autocomplete="off">
+            <span id="cooldown-timer"></span>
             <button id="send-btn" class="btn">Send</button>
         </div>
     </div>
@@ -168,9 +171,11 @@
         const btn = document.getElementById('send-btn');
         const menu = document.getElementById('attachment-menu');
         const preview = document.getElementById('preview-container');
+        const timerDisplay = document.getElementById('cooldown-timer');
         
         let history = JSON.parse(localStorage.getItem('chat_history')) || [];
         let currentFiles = [];
+        let cooldownEnd = parseInt(localStorage.getItem('cooldown_end')) || 0;
 
         function toggleMenu() { menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex'; }
         function triggerFile(type) { 
@@ -183,7 +188,6 @@
         function handleFile(input) {
             const file = input.files[0];
             if (!file) return;
-            
             const reader = new FileReader();
             reader.onload = (e) => {
                 currentFiles.push({ name: file.name, type: file.type, data: e.target.result });
@@ -198,20 +202,49 @@
             currentFiles.forEach((f, i) => {
                 const div = document.createElement('div');
                 div.style.position = 'relative';
-                div.innerHTML = `
-                    <img src="${f.data}" class="preview-item">
-                    <div class="remove-preview" onclick="removeFile(${i})">×</div>
-                `;
+                div.innerHTML = `<img src="${f.data}" class="preview-item"><div class="remove-preview" onclick="removeFile(${i})">×</div>`;
                 preview.appendChild(div);
             });
         }
 
         function removeFile(i) { currentFiles.splice(i, 1); renderPreviews(); }
 
+        function clearChat() {
+            if (confirm('Clear conversation?')) {
+                history = [];
+                localStorage.removeItem('chat_history');
+                renderHistory();
+                toggleMenu();
+            }
+        }
+
+        function checkCooldown() {
+            const now = Date.now();
+            if (now < cooldownEnd) {
+                const remaining = Math.ceil((cooldownEnd - now) / 1000);
+                btn.disabled = true;
+                timerDisplay.style.display = 'inline';
+                timerDisplay.innerText = `${remaining}s`;
+                setTimeout(checkCooldown, 1000);
+            } else {
+                btn.disabled = false;
+                timerDisplay.style.display = 'none';
+            }
+        }
+
+        function setCooldown(responseLength) {
+            let seconds = 5;
+            if (responseLength > 1000) seconds = 60;
+            else if (responseLength > 500) seconds = 30;
+            else if (responseLength > 100) seconds = 10;
+            
+            cooldownEnd = Date.now() + (seconds * 1000);
+            localStorage.setItem('cooldown_end', cooldownEnd);
+            checkCooldown();
+        }
+
         function parseMarkdown(text) {
-            try {
-                return marked.parse(text);
-            } catch (e) { return text; }
+            try { return marked.parse(text); } catch (e) { return text; }
         }
 
         function addMessageToDOM(role, text) {
@@ -224,41 +257,41 @@
             return div.querySelector('.content');
         }
 
+        function renderHistory() {
+            container.innerHTML = '';
+            if (history.length === 0) addMessageToDOM('assistant', 'Hello. I am Jan Agent. How can I help you today?');
+            else history.forEach(msg => {
+                const text = typeof msg.content === 'string' ? msg.content : msg.content.find(c => c.type === 'text')?.text || "[Attachment]";
+                addMessageToDOM(msg.role === 'user' ? 'user' : 'assistant', text);
+            });
+            container.scrollTop = container.scrollHeight;
+        }
+
         async function send() {
             const val = input.value.trim();
             if (!val && !currentFiles.length) return;
-
             const userMsg = { role: 'user', content: [] };
             if (val) userMsg.content.push({ type: 'text', text: val });
-            
-            currentFiles.forEach(f => {
-                userMsg.content.push({ 
-                    type: 'image_url', 
-                    image_url: { url: f.data } 
-                });
-            });
-
+            currentFiles.forEach(f => { userMsg.content.push({ type: 'image_url', image_url: { url: f.data } }); });
             input.value = '';
             currentFiles = [];
             renderPreviews();
-            
             history.push(userMsg);
             localStorage.setItem('chat_history', JSON.stringify(history));
             addMessageToDOM('user', val || "[Attachment]");
-
             const aiContentDiv = addMessageToDOM('assistant', '');
             let fullAiResponse = "";
-
             try {
                 const response = await fetch(BACKEND_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'JanAgent' // Security header
+                    },
                     body: JSON.stringify({ messages: history })
                 });
-
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
-
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;
@@ -266,21 +299,17 @@
                     aiContentDiv.innerHTML = parseMarkdown(fullAiResponse);
                     container.scrollTop = container.scrollHeight;
                 }
-
                 history.push({ role: 'assistant', content: fullAiResponse });
                 localStorage.setItem('chat_history', JSON.stringify(history));
+                setCooldown(fullAiResponse.length);
             } catch (e) { aiContentDiv.innerHTML = 'Error: Connection failed.'; }
-            finally { btn.disabled = false; }
         }
 
         btn.onclick = send;
-        input.onkeypress = (e) => { if (e.key === 'Enter') send(); };
+        input.onkeypress = (e) => { if (e.key === 'Enter' && !btn.disabled) send(); };
         window.onload = () => {
-            if (history.length === 0) addMessageToDOM('assistant', 'Hello. I am Jan Agent. How can I help you today?');
-            else history.forEach(msg => {
-                const text = typeof msg.content === 'string' ? msg.content : msg.content.find(c => c.type === 'text')?.text || "[Attachment]";
-                addMessageToDOM(msg.role === 'user' ? 'user' : 'assistant', text);
-            });
+            renderHistory();
+            checkCooldown();
         };
     </script>
 </body>
