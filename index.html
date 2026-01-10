@@ -172,7 +172,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
-        const BACKEND_URL = "https://jan-agent-backend-test.onrender.com/chat";
+        // Using a relative path to hide the actual backend URL from the client-side code.
+        const BACKEND_URL = "/api/chat";
         const container = document.getElementById('chat-container');
         const input = document.getElementById('user-input');
         const btn = document.getElementById('send-btn');
@@ -270,7 +271,6 @@
                             setTimeout(() => { copyBtn.innerText = 'Copy'; }, 2000);
                         });
                     };
-                    pre.parentNode.insertBefore(wrapper, pre);
                     wrapper.appendChild(copyBtn);
                     wrapper.appendChild(pre);
                 });
