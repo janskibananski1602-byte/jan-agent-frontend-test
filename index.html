@@ -146,12 +146,13 @@
         }
         #cooldown-message {
             font-size: 12px; color: var(--gray); display: none;
-            font-weight: 400; margin-right: 6px; position: absolute;
-            right: 90px; white-space: nowrap;
+            font-weight: 400; white-space: nowrap;
+            position: absolute; left: 50%; transform: translateX(-50%);
         }
         #cooldown-timer {
             font-size: 12px; color: var(--gray); display: none;
-            font-weight: 600; position: absolute; right: 20px;
+            font-weight: 600; position: absolute; 
+            left: 50%; transform: translateX(-50%); top: 35px;
         }
         #footer {
             text-align: center; padding: 12px 20px; font-size: 11px;
@@ -310,6 +311,11 @@
         }
 
         function parseMarkdown(text) {
+            // Handle non-string inputs
+            if (typeof text !== 'string') {
+                text = String(text || '');
+            }
+            
             try {
                 let html = marked.parse(text);
                 const tempDiv = document.createElement('div');
@@ -340,10 +346,17 @@
                     wrapper.appendChild(pre);
                 });
                 return tempDiv.innerHTML;
-            } catch (e) { return text.replace(/\n/g, '<br>'); }
+            } catch (e) { 
+                return String(text).replace(/\n/g, '<br>'); 
+            }
         }
 
         function addMessageToDOM(role, text) {
+            // Ensure text is a string
+            if (typeof text !== 'string') {
+                text = String(text || '');
+            }
+            
             const div = document.createElement('div');
             div.className = 'msg';
             const roleLabel = role === 'user' ? 'You' : 'Jan Agent';
@@ -355,11 +368,14 @@
 
         function renderHistory() {
             container.innerHTML = '';
-            if (history.length === 0) addMessageToDOM('assistant', 'Hello. I am Jan Agent. How can I help you today?');
-            else history.forEach(msg => {
-                const text = typeof msg.content === 'string' ? msg.content : msg.content.find(c => c.type === 'text')?.text || "[Attachment]";
-                addMessageToDOM(msg.role === 'user' ? 'user' : 'assistant', text);
-            });
+            if (history.length === 0) {
+                addMessageToDOM('assistant', 'Hello. I am Jan Agent. How can I help you today?');
+            } else {
+                history.forEach(msg => {
+                    const content = msg.content || '';
+                    addMessageToDOM(msg.role === 'user' ? 'user' : 'assistant', content);
+                });
+            }
             container.scrollTop = container.scrollHeight;
         }
 
@@ -367,43 +383,55 @@
             const val = input.value.trim();
             if (!val && !currentFiles.length) return;
             
-            let messageText = val || "Please analyze these files.";
-            
             const displayText = val || `[${currentFiles.length} file(s) attached]`;
             
-            // Prepare files for backend
+            // Store files before clearing
             const filesData = currentFiles.map(f => ({
                 name: f.name,
                 type: f.type,
                 data: f.data
             }));
             
-            const userMsg = { role: 'user', content: messageText };
-            
+            // Clear input and files
             input.value = '';
             currentFiles = [];
             renderPreviews();
             
+            // Add user message to history and display
+            const userMsg = { role: 'user', content: val || "Please analyze these files." };
             history.push(userMsg);
             localStorage.setItem('chat_history', JSON.stringify(history));
             addMessageToDOM('user', displayText);
             
+            // Prepare AI response
             const aiContentDiv = addMessageToDOM('assistant', '');
             let fullAiResponse = "";
             
             try {
+                const payload = {
+                    messages: history
+                };
+                
+                // Only add files if there are any
+                if (filesData.length > 0) {
+                    payload.files = filesData;
+                }
+                
                 const response = await fetch(BACKEND_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        messages: history,
-                        files: filesData 
-                    })
+                    body: JSON.stringify(payload)
                 });
 
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || `Server error: ${response.status}`);
+                    let errorMsg;
+                    try {
+                        const errorData = await response.json();
+                        errorMsg = errorData.error || `Server error: ${response.status}`;
+                    } catch {
+                        errorMsg = `Server error: ${response.status}`;
+                    }
+                    throw new Error(errorMsg);
                 }
 
                 const reader = response.body.getReader();
@@ -421,7 +449,8 @@
                 localStorage.setItem('chat_history', JSON.stringify(history));
                 setCooldown(fullAiResponse.length);
             } catch (e) { 
-                aiContentDiv.innerHTML = `<span style="color: #ff4444;">Error: ${e.message}</span>`; 
+                aiContentDiv.innerHTML = `<span style="color: #ff4444;">Error: ${e.message}</span>`;
+                console.error('Send error:', e);
             }
         }
 
