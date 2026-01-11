@@ -143,6 +143,15 @@
             font-size: 12px; color: var(--gray); margin-left: 10px; display: none;
             font-weight: 600;
         }
+        #cooldown-message {
+            font-size: 12px; color: var(--gray); display: none;
+            font-weight: 400; margin-right: 6px;
+        }
+        #footer {
+            text-align: center; padding: 12px 20px; font-size: 11px;
+            color: var(--gray); border-top: 1px solid var(--border);
+            background: var(--bg); flex-shrink: 0;
+        }
 
         @media (min-width: 1024px) {
             #chat-container { padding: 40px 0; }
@@ -167,15 +176,18 @@
     <div id="bottom-bar">
         <div id="input-area">
             <div id="attachment-menu">
-                <div class="menu-item" onclick="triggerFile()">📎 Attach</div>
-                <div class="menu-item" onclick="clearChat()" style="color: #ff4444;">🗑️ Clear Chat</div>
+                <div class="menu-item" onclick="triggerFile()">Attach</div>
+                <div class="menu-item" onclick="clearChat()" style="color: #ff4444;">Clear Chat</div>
             </div>
             <button id="plus-btn" onclick="toggleMenu()">+</button>
             <input type="text" id="user-input" placeholder="Ask anything..." autocomplete="off">
+            <span id="cooldown-message">Please wait until you can send a message again</span>
             <span id="cooldown-timer"></span>
             <button id="send-btn" class="btn">Send</button>
         </div>
     </div>
+
+    <div id="footer">© 2026 Bananski/Jan. All Rights Reserved.</div>
 
     <input type="file" id="file-input" style="display:none" multiple onchange="handleFiles(this)">
 
@@ -188,6 +200,7 @@
         const menu = document.getElementById('attachment-menu');
         const preview = document.getElementById('preview-container');
         const timerDisplay = document.getElementById('cooldown-timer');
+        const cooldownMsg = document.getElementById('cooldown-message');
         
         let history = JSON.parse(localStorage.getItem('chat_history')) || [];
         let currentFiles = [];
@@ -262,11 +275,13 @@
             if (now < cooldownEnd) {
                 const remaining = Math.ceil((cooldownEnd - now) / 1000);
                 btn.disabled = true;
+                cooldownMsg.style.display = 'inline';
                 timerDisplay.style.display = 'inline';
                 timerDisplay.innerText = `${remaining}s`;
                 setTimeout(checkCooldown, 1000);
             } else {
                 btn.disabled = false;
+                cooldownMsg.style.display = 'none';
                 timerDisplay.style.display = 'none';
             }
         }
