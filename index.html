@@ -110,6 +110,9 @@
         .btn:disabled { opacity: 0.3; cursor: not-allowed; }
         .btn.hidden { display: none; }
         
+        #plus-btn.hidden { display: none; }
+        input.hidden { display: none; }
+        
         #plus-btn { 
             background: var(--text); color: var(--bg); 
             width: 32px; height: 32px; border-radius: 50%;
@@ -200,6 +203,7 @@
         const container = document.getElementById('chat-container');
         const input = document.getElementById('user-input');
         const btn = document.getElementById('send-btn');
+        const plusBtn = document.getElementById('plus-btn');
         const menu = document.getElementById('attachment-menu');
         const preview = document.getElementById('preview-container');
         const timerDisplay = document.getElementById('cooldown-timer');
@@ -278,12 +282,16 @@
             if (now < cooldownEnd) {
                 const remaining = Math.ceil((cooldownEnd - now) / 1000);
                 btn.classList.add('hidden');
+                input.classList.add('hidden');
+                plusBtn.classList.add('hidden');
                 cooldownMsg.style.display = 'inline';
                 timerDisplay.style.display = 'inline';
                 timerDisplay.innerText = `${remaining}s`;
                 setTimeout(checkCooldown, 1000);
             } else {
                 btn.classList.remove('hidden');
+                input.classList.remove('hidden');
+                plusBtn.classList.remove('hidden');
                 btn.disabled = false;
                 cooldownMsg.style.display = 'none';
                 timerDisplay.style.display = 'none';
@@ -307,20 +315,26 @@
                 const tempDiv = document.createElement('div');
                 tempDiv.innerHTML = html;
                 tempDiv.querySelectorAll('pre').forEach((pre, idx) => {
-                    const code = pre.innerText;
                     const wrapper = document.createElement('div');
                     wrapper.className = 'code-wrapper';
+                    
                     const copyBtn = document.createElement('button');
                     copyBtn.className = 'copy-btn';
-                    copyBtn.innerText = 'Copy';
-                    copyBtn.setAttribute('data-code', code);
-                    copyBtn.addEventListener('click', function() {
-                        const codeText = this.getAttribute('data-code');
+                    copyBtn.textContent = 'Copy';
+                    
+                    const codeText = pre.textContent;
+                    
+                    copyBtn.onclick = function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
                         navigator.clipboard.writeText(codeText).then(() => {
-                            this.innerText = 'Copied!';
-                            setTimeout(() => { this.innerText = 'Copy'; }, 2000);
+                            copyBtn.textContent = 'Copied!';
+                            setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000);
+                        }).catch(err => {
+                            console.error('Copy failed:', err);
                         });
-                    });
+                    };
+                    
                     pre.parentNode.insertBefore(wrapper, pre);
                     wrapper.appendChild(copyBtn);
                     wrapper.appendChild(pre);
@@ -353,12 +367,23 @@
             const val = input.value.trim();
             if (!val && !currentFiles.length) return;
             
-            let displayText = val || "[Attachment]";
+            let messageText = val;
             
-            const userMsg = { role: 'user', content: val || "What's in this attachment?" };
+            // Build message with file info
+            if (currentFiles.length > 0) {
+                const fileNames = currentFiles.map(f => f.name).join(', ');
+                if (messageText) {
+                    messageText += `\n\n[Files attached: ${fileNames}]`;
+                } else {
+                    messageText = `[Files attached: ${fileNames}]`;
+                }
+            }
+            
+            const displayText = val || `[${currentFiles.length} file(s) attached]`;
+            
+            const userMsg = { role: 'user', content: messageText || "I've attached some files. Can you help me with them?" };
             
             input.value = '';
-            const attachedFiles = [...currentFiles];
             currentFiles = [];
             renderPreviews();
             
