@@ -367,21 +367,18 @@
             const val = input.value.trim();
             if (!val && !currentFiles.length) return;
             
-            let messageText = val;
-            
-            // Build message with file info
-            if (currentFiles.length > 0) {
-                const fileNames = currentFiles.map(f => f.name).join(', ');
-                if (messageText) {
-                    messageText += `\n\n[Files attached: ${fileNames}]`;
-                } else {
-                    messageText = `[Files attached: ${fileNames}]`;
-                }
-            }
+            let messageText = val || "Please analyze these files.";
             
             const displayText = val || `[${currentFiles.length} file(s) attached]`;
             
-            const userMsg = { role: 'user', content: messageText || "I've attached some files. Can you help me with them?" };
+            // Prepare files for backend
+            const filesData = currentFiles.map(f => ({
+                name: f.name,
+                type: f.type,
+                data: f.data
+            }));
+            
+            const userMsg = { role: 'user', content: messageText };
             
             input.value = '';
             currentFiles = [];
@@ -398,7 +395,10 @@
                 const response = await fetch(BACKEND_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ messages: history })
+                    body: JSON.stringify({ 
+                        messages: history,
+                        files: filesData 
+                    })
                 });
 
                 if (!response.ok) {
