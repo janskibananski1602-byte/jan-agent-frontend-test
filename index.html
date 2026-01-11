@@ -105,8 +105,10 @@
             background: var(--text); color: var(--bg); border: none; 
             padding: 10px 20px; border-radius: 8px; cursor: pointer; 
             font-weight: 600; font-size: 14px; white-space: nowrap;
+            transition: opacity 0.2s;
         }
         .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .btn.hidden { display: none; }
         
         #plus-btn { 
             background: var(--text); color: var(--bg); 
@@ -139,13 +141,14 @@
             font-size: 12px; display: flex; align-items: center; justify-content: center;
             cursor: pointer; font-weight: bold;
         }
-        #cooldown-timer {
-            font-size: 12px; color: var(--gray); margin-left: 10px; display: none;
-            font-weight: 600;
-        }
         #cooldown-message {
             font-size: 12px; color: var(--gray); display: none;
-            font-weight: 400; margin-right: 6px;
+            font-weight: 400; margin-right: 6px; position: absolute;
+            right: 90px; white-space: nowrap;
+        }
+        #cooldown-timer {
+            font-size: 12px; color: var(--gray); display: none;
+            font-weight: 600; position: absolute; right: 20px;
         }
         #footer {
             text-align: center; padding: 12px 20px; font-size: 11px;
@@ -181,9 +184,9 @@
             </div>
             <button id="plus-btn" onclick="toggleMenu()">+</button>
             <input type="text" id="user-input" placeholder="Ask anything..." autocomplete="off">
+            <button id="send-btn" class="btn">Send</button>
             <span id="cooldown-message">Please wait until you can send a message again</span>
             <span id="cooldown-timer"></span>
-            <button id="send-btn" class="btn">Send</button>
         </div>
     </div>
 
@@ -274,12 +277,13 @@
             const now = Date.now();
             if (now < cooldownEnd) {
                 const remaining = Math.ceil((cooldownEnd - now) / 1000);
-                btn.disabled = true;
+                btn.classList.add('hidden');
                 cooldownMsg.style.display = 'inline';
                 timerDisplay.style.display = 'inline';
                 timerDisplay.innerText = `${remaining}s`;
                 setTimeout(checkCooldown, 1000);
             } else {
+                btn.classList.remove('hidden');
                 btn.disabled = false;
                 cooldownMsg.style.display = 'none';
                 timerDisplay.style.display = 'none';
@@ -302,19 +306,21 @@
                 let html = marked.parse(text);
                 const tempDiv = document.createElement('div');
                 tempDiv.innerHTML = html;
-                tempDiv.querySelectorAll('pre').forEach(pre => {
+                tempDiv.querySelectorAll('pre').forEach((pre, idx) => {
                     const code = pre.innerText;
                     const wrapper = document.createElement('div');
                     wrapper.className = 'code-wrapper';
                     const copyBtn = document.createElement('button');
                     copyBtn.className = 'copy-btn';
                     copyBtn.innerText = 'Copy';
-                    copyBtn.onclick = () => {
-                        navigator.clipboard.writeText(code).then(() => {
-                            copyBtn.innerText = 'Copied!';
-                            setTimeout(() => { copyBtn.innerText = 'Copy'; }, 2000);
+                    copyBtn.setAttribute('data-code', code);
+                    copyBtn.addEventListener('click', function() {
+                        const codeText = this.getAttribute('data-code');
+                        navigator.clipboard.writeText(codeText).then(() => {
+                            this.innerText = 'Copied!';
+                            setTimeout(() => { this.innerText = 'Copy'; }, 2000);
                         });
-                    };
+                    });
                     pre.parentNode.insertBefore(wrapper, pre);
                     wrapper.appendChild(copyBtn);
                     wrapper.appendChild(pre);
@@ -347,28 +353,18 @@
             const val = input.value.trim();
             if (!val && !currentFiles.length) return;
             
-            const userMsg = { role: 'user', content: [] };
-            if (val) userMsg.content.push({ type: 'text', text: val });
+            let displayText = val || "[Attachment]";
             
-            currentFiles.forEach(f => {
-                if (f.isImage) {
-                    userMsg.content.push({ type: 'image_url', image_url: { url: f.data } });
-                } else {
-                    if (!userMsg.content.some(c => c.type === 'text')) {
-                        userMsg.content.push({ type: 'text', text: `[File attached: ${f.name}]` });
-                    } else {
-                        userMsg.content[0].text += `\n[File attached: ${f.name}]`;
-                    }
-                }
-            });
+            const userMsg = { role: 'user', content: val || "What's in this attachment?" };
             
             input.value = '';
+            const attachedFiles = [...currentFiles];
             currentFiles = [];
             renderPreviews();
             
             history.push(userMsg);
             localStorage.setItem('chat_history', JSON.stringify(history));
-            addMessageToDOM('user', val || "[Attachment]");
+            addMessageToDOM('user', displayText);
             
             const aiContentDiv = addMessageToDOM('assistant', '');
             let fullAiResponse = "";
@@ -405,7 +401,7 @@
         }
 
         btn.onclick = send;
-        input.onkeypress = (e) => { if (e.key === 'Enter' && !btn.disabled) send(); };
+        input.onkeypress = (e) => { if (e.key === 'Enter' && !btn.classList.contains('hidden')) send(); };
         window.onload = () => { renderHistory(); checkCooldown(); };
     </script>
 </body>
