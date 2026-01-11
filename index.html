@@ -320,7 +320,10 @@
                 let html = marked.parse(text);
                 const tempDiv = document.createElement('div');
                 tempDiv.innerHTML = html;
-                tempDiv.querySelectorAll('pre').forEach((pre, idx) => {
+                
+                // Process code blocks and add copy buttons
+                const preElements = tempDiv.querySelectorAll('pre');
+                preElements.forEach((pre) => {
                     const wrapper = document.createElement('div');
                     wrapper.className = 'code-wrapper';
                     
@@ -328,25 +331,37 @@
                     copyBtn.className = 'copy-btn';
                     copyBtn.textContent = 'Copy';
                     
-                    const codeText = pre.textContent;
+                    // Store the code text
+                    const codeText = pre.textContent || pre.innerText;
                     
-                    copyBtn.onclick = function(e) {
+                    // Add click handler
+                    copyBtn.addEventListener('click', function(e) {
                         e.preventDefault();
                         e.stopPropagation();
+                        
                         navigator.clipboard.writeText(codeText).then(() => {
                             copyBtn.textContent = 'Copied!';
-                            setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000);
+                            setTimeout(() => { 
+                                copyBtn.textContent = 'Copy'; 
+                            }, 2000);
                         }).catch(err => {
                             console.error('Copy failed:', err);
+                            copyBtn.textContent = 'Failed';
+                            setTimeout(() => { 
+                                copyBtn.textContent = 'Copy'; 
+                            }, 2000);
                         });
-                    };
+                    });
                     
+                    // Insert wrapper before pre element
                     pre.parentNode.insertBefore(wrapper, pre);
                     wrapper.appendChild(copyBtn);
                     wrapper.appendChild(pre);
                 });
+                
                 return tempDiv.innerHTML;
             } catch (e) { 
+                console.error('Markdown parse error:', e);
                 return String(text).replace(/\n/g, '<br>'); 
             }
         }
